@@ -37,6 +37,21 @@
   color: #fff;
 }
 
+/* Phones: collapse to the active tab until it's tapped again. */
+@media (max-width: 600px) {
+  .tabs:not(.expanded) .tab:not(.active) {
+    display: none;
+  }
+
+  .tab.active::after {
+    content: ' ▾';
+  }
+
+  .tabs.expanded .tab.active::after {
+    content: ' ▴';
+  }
+}
+
 /* ---- Trainer layout ---- */
 
 .trainer {

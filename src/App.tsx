@@ -27,13 +27,19 @@ type Tab = (typeof TABS)[number]['id'];
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('neck');
+  // On phones only the active tab shows; tapping it reveals the rest.
+  const [tabsExpanded, setTabsExpanded] = useState(false);
   const { Trainer } = TABS.find((t) => t.id === tab)!;
 
   return (
     <div className="app">
       <header className="app-header">
         <h1>🎸 Guitar Theory Trainer</h1>
-        <nav className="tabs" role="tablist" aria-label="Trainers">
+        <nav
+          className={tabsExpanded ? 'tabs expanded' : 'tabs'}
+          role="tablist"
+          aria-label="Trainers"
+        >
           {TABS.map((t) => (
             <button
               key={t.id}
@@ -41,7 +47,14 @@ export default function App() {
               role="tab"
               aria-selected={tab === t.id}
               className={tab === t.id ? 'tab active' : 'tab'}
-              onClick={() => setTab(t.id)}
+              onClick={() => {
+                if (tab === t.id) {
+                  setTabsExpanded((e) => !e);
+                } else {
+                  setTab(t.id);
+                  setTabsExpanded(false);
+                }
+              }}
             >
               {t.label}
             </button>
