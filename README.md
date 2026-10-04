@@ -54,6 +54,13 @@ npm run test:watch  # re-run tests on change
 npm run lint     # lint with oxlint
 ```
 
+## Deployment
+
+Live at <https://guitartheorytrainer.com>. Every push to `main` runs lint,
+tests, and the production build, then publishes `dist/` to GitHub Pages
+(`.github/workflows/deploy.yml`). The custom domain is configured in the
+repo's Pages settings.
+
 ## Tech
 
 - React 19 + TypeScript
