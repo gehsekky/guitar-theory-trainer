@@ -32,7 +32,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>🎸 Guitar Trainer</h1>
+        <h1>🎸 Guitar Theory Trainer</h1>
         <nav className="tabs" role="tablist" aria-label="Trainers">
           {TABS.map((t) => (
             <button

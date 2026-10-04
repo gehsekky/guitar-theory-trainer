@@ -55,8 +55,8 @@ function newRound(theme: Theme, accidentals: boolean, prev?: Round): Round {
 
 type Phase = 'guessing' | 'graded';
 
-const THEME_STORAGE_KEY = 'guitar-trainer.chord-flashcard-theme';
-const ACCIDENTALS_STORAGE_KEY = 'guitar-trainer.chord-flashcard-accidentals';
+const THEME_STORAGE_KEY = 'guitar-theory-trainer.chord-flashcard-theme';
+const ACCIDENTALS_STORAGE_KEY = 'guitar-theory-trainer.chord-flashcard-accidentals';
 
 function loadTheme(): Theme {
   const stored = localStorage.getItem(THEME_STORAGE_KEY);

@@ -30,8 +30,8 @@ function newRound(): Round {
 
 type Phase = 'guessing' | 'graded';
 
-const MODE_STORAGE_KEY = 'guitar-trainer.diatonic-mode';
-const KEYTYPE_STORAGE_KEY = 'guitar-trainer.diatonic-keytype';
+const MODE_STORAGE_KEY = 'guitar-theory-trainer.diatonic-mode';
+const KEYTYPE_STORAGE_KEY = 'guitar-theory-trainer.diatonic-keytype';
 
 function loadMode(): Mode {
   return localStorage.getItem(MODE_STORAGE_KEY) === 'name' ? 'name' : 'find';

@@ -36,7 +36,7 @@ function newRound(mode: Mode): Round {
 
 type Phase = 'guessing' | 'graded';
 
-const MODE_STORAGE_KEY = 'guitar-trainer.scale-degree-mode';
+const MODE_STORAGE_KEY = 'guitar-theory-trainer.scale-degree-mode';
 
 function loadMode(): Mode {
   const stored = localStorage.getItem(MODE_STORAGE_KEY);

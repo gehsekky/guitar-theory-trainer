@@ -17,8 +17,8 @@ const GAMES: { id: EarGame; label: string }[] = [
 // sessions and shared by future ear games.
 type KeyMode = 'random' | 'fixed';
 
-const KEY_MODE_STORAGE = 'guitar-trainer.ear-key-mode';
-const FIXED_KEY_STORAGE = 'guitar-trainer.ear-fixed-key';
+const KEY_MODE_STORAGE = 'guitar-theory-trainer.ear-key-mode';
+const FIXED_KEY_STORAGE = 'guitar-theory-trainer.ear-fixed-key';
 
 function loadKeyMode(): KeyMode {
   return localStorage.getItem(KEY_MODE_STORAGE) === 'fixed'

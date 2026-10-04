@@ -24,7 +24,7 @@ interface ChordEarTrainerProps {
   fixedKey: Note | null;
 }
 
-const MODE_STORAGE_KEY = 'guitar-trainer.ear-chord-mode';
+const MODE_STORAGE_KEY = 'guitar-theory-trainer.ear-chord-mode';
 
 function loadMode(): Mode {
   return localStorage.getItem(MODE_STORAGE_KEY) === 'hard' ? 'hard' : 'easy';

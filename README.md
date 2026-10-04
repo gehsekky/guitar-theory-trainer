@@ -1,4 +1,4 @@
-# 🎸 Guitar Trainer
+# 🎸 Guitar Theory Trainer
 
 A browser-based practice app for guitarists to drill fretboard knowledge,
 music theory, and ear training. Built with React + Vite + TypeScript, with no
