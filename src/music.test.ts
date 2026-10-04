@@ -8,6 +8,7 @@ import {
   EAR_CHORDS_HARD,
   FRET_COUNT,
   INTERVALS,
+  NATURAL_NOTES,
   NOTE_INDEX,
   QUALITY_LABEL,
   SCALE_INTERVALS,
@@ -20,6 +21,7 @@ import {
   pick,
   randomInt,
   randomNote,
+  sameNoteOrder,
   sameNoteSet,
   scaleNotes,
   transpose,
@@ -31,6 +33,10 @@ describe('chromatic scale', () => {
   it('has 12 unique notes indexed consistently', () => {
     expect(new Set(CHROMATIC).size).toBe(12);
     CHROMATIC.forEach((note, i) => expect(NOTE_INDEX[note]).toBe(i));
+  });
+
+  it('lists the seven naturals', () => {
+    expect(NATURAL_NOTES).toEqual(['A', 'B', 'C', 'D', 'E', 'F', 'G']);
   });
 });
 
@@ -249,6 +255,17 @@ describe('diatonic chords', () => {
       }
     },
   );
+});
+
+describe('sameNoteOrder', () => {
+  it('requires the same notes in the same positions', () => {
+    expect(sameNoteOrder(['C', 'E', 'G'], ['C', 'E', 'G'])).toBe(true);
+    expect(sameNoteOrder(['E', 'G', 'C'], ['C', 'E', 'G'])).toBe(false);
+  });
+
+  it('rejects different lengths', () => {
+    expect(sameNoteOrder(['C', 'E', 'G'], ['C', 'E', 'G', 'B'])).toBe(false);
+  });
 });
 
 describe('sameNoteSet', () => {

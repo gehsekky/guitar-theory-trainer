@@ -197,7 +197,7 @@
   color: var(--failure-text);
 }
 
-/* ---- Triad trainer ---- */
+/* ---- Shared toggles & chord prompts ---- */
 
 .mode-toggle {
   display: flex;
@@ -217,6 +217,12 @@
 .mode-btn.active {
   background: var(--accent);
   color: #fff;
+}
+
+@media (max-width: 480px) {
+  .mode-btn {
+    padding: 0.4rem 0.9rem;
+  }
 }
 
 .chord-prompt {
@@ -251,6 +257,72 @@
   border-style: dashed;
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/* ---- Chord flashcards ---- */
+
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.check-label input {
+  accent-color: var(--accent);
+  width: 1rem;
+  height: 1rem;
+}
+
+.flashcard {
+  width: min(100%, 20rem);
+  aspect-ratio: 5 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.12);
+}
+
+.flashcard-note {
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.flashcard-quality {
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+.tone-slot-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.tone-role {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.tone-slot.correct {
+  background: var(--success-bg);
+  border-color: var(--success-text);
+  color: var(--success-text);
+}
+
+.tone-slot.wrong {
+  background: var(--failure-bg);
+  border-color: var(--failure-text);
+  color: var(--failure-text);
 }
 
 .pick-count {

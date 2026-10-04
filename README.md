@@ -9,10 +9,12 @@ backend — all logic runs client-side and preferences persist in
 
 - **Neck Notes** — a position (open string through fret 22) is marked on an
   SVG fretboard; name the note.
-- **Chord Triads** — identify triad tones.
-  - *Easy:* major/minor triad with one tone hidden — pick the missing note.
-  - *Hard:* all four qualities (major, minor, diminished, augmented) with all
-    three tones hidden — pick them all.
+- **Chord Flashcards** — a flashcard shows a root note and chord type; spell
+  the chord in root position by picking its notes in order (root, 3rd, 5th,
+  and 7th for seventh chords). Order is graded.
+  - *Themes:* Major, Minor, Major 7th, or All (a mix of the three).
+  - *Include sharp/flat notes* (on by default): when off, roots are naturals
+    only — the chord tones themselves can still be sharp or flat.
 - **Sheet Music** — read a note on a treble staff (with key signature, ledger
   lines, and accidentals).
   - *Easy:* key signature drawn and named; quarter notes.

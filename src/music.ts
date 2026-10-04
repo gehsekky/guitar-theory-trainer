@@ -18,6 +18,9 @@ export const CHROMATIC = [
 
 export type Note = (typeof CHROMATIC)[number];
 
+/** The seven natural notes (no sharps/flats). */
+export const NATURAL_NOTES: Note[] = CHROMATIC.filter((n) => !n.includes('#'));
+
 export const NOTE_INDEX: Record<Note, number> = CHROMATIC.reduce(
   (acc, note, i) => {
     acc[note] = i;
@@ -84,14 +87,6 @@ export const TRIAD_INTERVALS: Record<Quality, [number, number, number]> = {
   diminished: [0, 3, 6],
   augmented: [0, 4, 8],
 };
-
-export const EASY_QUALITIES: Quality[] = ['major', 'minor'];
-export const HARD_QUALITIES: Quality[] = [
-  'major',
-  'minor',
-  'diminished',
-  'augmented',
-];
 
 /** The three notes of a triad, in root/third/fifth order. */
 export function triadNotes(root: Note, quality: Quality): [Note, Note, Note] {
@@ -284,6 +279,11 @@ export function randomNote(): Note {
 
 export function pick<T>(items: T[]): T {
   return items[randomInt(items.length)];
+}
+
+/** Compare two note sequences position by position. */
+export function sameNoteOrder(a: Note[], b: Note[]): boolean {
+  return a.length === b.length && a.every((n, i) => n === b[i]);
 }
 
 /** Compare two note sets for equality regardless of order. */

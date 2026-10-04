@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import NeckTrainer from './components/NeckTrainer';
-import TriadTrainer from './components/TriadTrainer';
+import ChordFlashcardTrainer from './components/ChordFlashcardTrainer';
 import SheetTrainer from './components/SheetTrainer';
 import ScaleTrainer from './components/ScaleTrainer';
 import EarTrainer from './components/EarTrainer';
@@ -10,7 +10,7 @@ import './App.css';
 
 type Tab =
   | 'neck'
-  | 'triad'
+  | 'chords'
   | 'sheet'
   | 'scale'
   | 'degree'
@@ -37,11 +37,11 @@ export default function App() {
           <button
             type="button"
             role="tab"
-            aria-selected={tab === 'triad'}
-            className={tab === 'triad' ? 'tab active' : 'tab'}
-            onClick={() => setTab('triad')}
+            aria-selected={tab === 'chords'}
+            className={tab === 'chords' ? 'tab active' : 'tab'}
+            onClick={() => setTab('chords')}
           >
-            Chord Triads
+            Chord Flashcards
           </button>
           <button
             type="button"
@@ -93,7 +93,7 @@ export default function App() {
 
       <main>
         {tab === 'neck' && <NeckTrainer />}
-        {tab === 'triad' && <TriadTrainer />}
+        {tab === 'chords' && <ChordFlashcardTrainer />}
         {tab === 'sheet' && <SheetTrainer />}
         {tab === 'scale' && <ScaleTrainer />}
         {tab === 'degree' && <ScaleDegreeTrainer />}
