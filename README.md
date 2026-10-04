@@ -7,7 +7,8 @@ backend — all logic runs client-side and preferences persist in
 
 ## Trainers
 
-- **Neck Notes** — a position is marked on an SVG fretboard; name the note.
+- **Neck Notes** — a position (open string through fret 22) is marked on an
+  SVG fretboard; name the note.
 - **Chord Triads** — identify triad tones.
   - *Easy:* major/minor triad with one tone hidden — pick the missing note.
   - *Hard:* all four qualities (major, minor, diminished, augmented) with all
@@ -21,10 +22,23 @@ backend — all logic runs client-side and preferences persist in
   - *Hard:* major or minor, no cheat sheet, all seven notes hidden.
 - **Scale Degrees** — name the note for a functional scale degree (tonic,
   dominant, leading tone, …), with a description of each degree's harmonic role.
-- **Ear Training** — hear a tonic then an interval and identify it by ear,
-  using the Web Audio API. Key can be random or fixed.
+  - *Easy:* major keys only.
+  - *Hard:* major or natural-minor keys.
+- **Diatonic Chords** — work with the chords built on each degree of a key,
+  in major or natural minor.
+  - *Find Chord:* given a key and Roman numeral (e.g. `vi` in G major), pick
+    the chord's root and quality.
+  - *Name Numeral:* given a key and a chord, pick its Roman numeral.
+- **Ear Training** — tones are synthesized with the Web Audio API. The key can
+  be random each round or fixed to a chosen note; both games share it.
+  - *Intervals:* hear a tonic then a second note and name the interval
+    (minor 2nd through octave).
+  - *Chords:* hear a chord and name its quality. Easy is major/minor; hard
+    adds diminished, augmented, and five seventh chords (major 7th,
+    dominant 7th, minor 7th, half-diminished 7th, diminished 7th).
 
-Accidentals are shown with both enharmonic spellings (e.g. A♯/B♭).
+Accidentals are shown with both enharmonic spellings (e.g. A♯/B♭). Mode and
+key choices are remembered between visits.
 
 ## Getting started
 
@@ -33,6 +47,9 @@ npm install
 npm run dev      # start the dev server
 npm run build    # type-check and build for production
 npm run preview  # preview the production build
+npm test         # run the test suite once
+npm run test:watch  # re-run tests on change
+npm run lint     # lint with oxlint
 ```
 
 ## Tech
@@ -41,6 +58,8 @@ npm run preview  # preview the production build
 - Vite
 - Web Audio API for tone generation
 - Inline SVG for the fretboard and musical staff
+- Vitest for unit tests (`src/*.test.ts`), covering the theory, staff, and
+  pitch helpers
 
 No external UI or music-theory libraries — the theory (scales, triads,
 intervals, key signatures) and rendering are implemented from scratch.
