@@ -19,9 +19,11 @@ backend — all logic runs client-side and preferences persist in
   lines, and accidentals).
   - *Easy:* key signature drawn and named; quarter notes.
   - *Hard:* key signature only (infer the key) and identify the note duration.
-- **Scales** — spell major and natural-minor scales.
-  - *Easy:* major only, with a W–W–H–W–W–W–H cheat sheet and one degree hidden.
-  - *Hard:* major or minor, no cheat sheet, all seven notes hidden.
+- **Scales** — a flashcard shows a root note and scale type; spell the scale
+  by picking its seven notes in order, starting from the root. Order is graded.
+  - *Themes:* Major, Minor (natural), or All (a mix of both).
+  - *Include sharp/flat notes* (on by default): when off, roots are naturals
+    only — the scale notes themselves can still be sharp or flat.
 - **Scale Degrees** — name the note for a functional scale degree (tonic,
   dominant, leading tone, …), with a description of each degree's harmonic role.
   - *Easy:* major keys only.

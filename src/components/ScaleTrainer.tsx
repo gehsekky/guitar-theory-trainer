@@ -1,144 +1,188 @@
 import { useState } from 'react';
 import NotePicker from './NotePicker';
 import {
-  MAJOR_SCALE_PATTERN,
+  CHROMATIC,
+  NATURAL_NOTES,
   displayNote,
   pick,
-  randomInt,
-  randomNote,
+  sameNoteOrder,
   sameNoteSet,
   scaleNotes,
   type Note,
   type ScaleType,
 } from '../music';
 
-type Mode = 'easy' | 'hard';
+type Theme = 'major' | 'minor' | 'all';
+
+const THEMES: { id: Theme; label: string; scales: ScaleType[] }[] = [
+  { id: 'major', label: 'Major', scales: ['major'] },
+  { id: 'minor', label: 'Minor', scales: ['minor'] },
+  { id: 'all', label: 'All', scales: ['major', 'minor'] },
+];
+
+const SCALE_LABEL: Record<ScaleType, string> = {
+  major: 'major',
+  minor: 'natural minor',
+};
+
+// Scale degree of each slot.
+const DEGREE_ROLES = ['root', '2nd', '3rd', '4th', '5th', '6th', '7th'];
 
 interface Round {
   root: Note;
   scaleType: ScaleType;
-  notes: Note[];
-  /** Easy mode: which degree (1-6, never the root) is hidden. */
-  hiddenIndex: number;
 }
 
-function newRound(mode: Mode): Round {
-  const root = randomNote();
-  const scaleType: ScaleType =
-    mode === 'easy' ? 'major' : pick(['major', 'minor'] as ScaleType[]);
-  return {
-    root,
-    scaleType,
-    notes: scaleNotes(root, scaleType),
-    // The root is already given by the key name, so never hide degree 0.
-    hiddenIndex: 1 + randomInt(6),
-  };
+function scalesFor(theme: Theme): ScaleType[] {
+  return THEMES.find((t) => t.id === theme)!.scales;
+}
+
+/** A new card, avoiding an immediate repeat of the previous one. */
+function newRound(theme: Theme, accidentals: boolean, prev?: Round): Round {
+  const roots = accidentals ? [...CHROMATIC] : NATURAL_NOTES;
+  const scales = scalesFor(theme);
+  let round: Round;
+  do {
+    round = { root: pick(roots), scaleType: pick(scales) };
+  } while (
+    prev &&
+    roots.length * scales.length > 1 &&
+    round.root === prev.root &&
+    round.scaleType === prev.scaleType
+  );
+  return round;
 }
 
 type Phase = 'guessing' | 'graded';
 
-const MODE_STORAGE_KEY = 'guitar-theory-trainer.scale-mode';
+const THEME_STORAGE_KEY = 'guitar-theory-trainer.scale-theme';
+const ACCIDENTALS_STORAGE_KEY = 'guitar-theory-trainer.scale-accidentals';
 
-function loadMode(): Mode {
-  const stored = localStorage.getItem(MODE_STORAGE_KEY);
-  return stored === 'hard' ? 'hard' : 'easy';
+function loadTheme(): Theme {
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  return THEMES.some((t) => t.id === stored) ? (stored as Theme) : 'major';
+}
+
+function loadAccidentals(): boolean {
+  return localStorage.getItem(ACCIDENTALS_STORAGE_KEY) !== 'false';
 }
 
 export default function ScaleTrainer() {
-  const [mode, setMode] = useState<Mode>(loadMode);
-  const [round, setRound] = useState<Round>(() => newRound(loadMode()));
+  const [theme, setTheme] = useState<Theme>(loadTheme);
+  const [accidentals, setAccidentals] = useState(loadAccidentals);
+  const [round, setRound] = useState<Round>(() =>
+    newRound(loadTheme(), loadAccidentals()),
+  );
   const [selected, setSelected] = useState<Note[]>([]);
   const [phase, setPhase] = useState<Phase>('guessing');
   const [correct, setCorrect] = useState(false);
 
-  const needed = mode === 'easy' ? 1 : 7;
-  const answerNotes: Note[] =
-    mode === 'easy' ? [round.notes[round.hiddenIndex]] : [...round.notes];
+  const answer = scaleNotes(round.root, round.scaleType);
+  const needed = answer.length;
+  const graded = phase === 'graded';
 
-  function changeMode(next: Mode) {
-    if (next === mode) return;
-    setMode(next);
-    localStorage.setItem(MODE_STORAGE_KEY, next);
-    setRound(newRound(next));
+  function reset(nextTheme: Theme, nextAccidentals: boolean) {
+    setRound(newRound(nextTheme, nextAccidentals));
     setSelected([]);
     setPhase('guessing');
+  }
+
+  function changeTheme(next: Theme) {
+    if (next === theme) return;
+    setTheme(next);
+    localStorage.setItem(THEME_STORAGE_KEY, next);
+    reset(next, accidentals);
+  }
+
+  function changeAccidentals(next: boolean) {
+    setAccidentals(next);
+    localStorage.setItem(ACCIDENTALS_STORAGE_KEY, String(next));
+    reset(theme, next);
   }
 
   function submit() {
     if (selected.length !== needed) return;
-    setCorrect(sameNoteSet(selected, answerNotes));
+    setCorrect(sameNoteOrder(selected, answer));
     setPhase('graded');
   }
 
   function next() {
-    setRound(newRound(mode));
+    setRound(newRound(theme, accidentals, round));
     setSelected([]);
     setPhase('guessing');
   }
 
-  const scaleName = `${displayNote(round.root)} ${round.scaleType}`;
-  const notesDisplay = round.notes.map(displayNote).join(' – ');
+  const scaleName = `${displayNote(round.root)} ${SCALE_LABEL[round.scaleType]}`;
+  const answerDisplay = answer.map(displayNote).join(' – ');
+  const rightNotesWrongOrder = !correct && sameNoteSet(selected, answer);
 
   return (
     <section className="trainer">
       <h2>Scale Trainer</h2>
 
-      <div className="mode-toggle" role="radiogroup" aria-label="Difficulty">
-        {(['easy', 'hard'] as const).map((m) => (
-          <button
-            key={m}
-            type="button"
-            role="radio"
-            aria-checked={mode === m}
-            className={mode === m ? 'mode-btn active' : 'mode-btn'}
-            onClick={() => changeMode(m)}
-          >
-            {m === 'easy' ? 'Easy' : 'Hard'}
-          </button>
-        ))}
+      <div className="toggle-row">
+        <div className="mode-toggle" role="radiogroup" aria-label="Scale theme">
+          {THEMES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="radio"
+              aria-checked={theme === t.id}
+              className={theme === t.id ? 'mode-btn active' : 'mode-btn'}
+              onClick={() => changeTheme(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <label className="check-label">
+          <input
+            type="checkbox"
+            checked={accidentals}
+            onChange={(e) => changeAccidentals(e.target.checked)}
+          />
+          Include sharp/flat notes
+        </label>
       </div>
 
       <p className="instructions">
-        {mode === 'easy'
-          ? 'One scale degree is hidden. Select the missing note.'
-          : 'Select all seven notes of the scale.'}
+        Spell the scale: pick its seven notes in order, starting from the root.
       </p>
 
-      <div className="chord-prompt">
-        <div className="chord-name">{scaleName}</div>
-        {mode === 'easy' && (
-          <div className="cheat-sheet">
-            {MAJOR_SCALE_PATTERN.join(' – ')}
-          </div>
-        )}
-        <div className="tone-slots scale-slots">
-          {round.notes.map((note, i) => {
-            const hidden = mode === 'hard' || i === round.hiddenIndex;
-            return (
-              <span
-                key={i}
-                className={hidden ? 'tone-slot hidden-tone' : 'tone-slot'}
-              >
-                {hidden && phase !== 'graded' ? '?' : displayNote(note)}
+      <div className="flashcard" aria-label={`Flashcard: ${scaleName}`}>
+        <div className="flashcard-note">{displayNote(round.root)}</div>
+        <div className="flashcard-quality">{SCALE_LABEL[round.scaleType]}</div>
+      </div>
+
+      <div className="tone-slots scale-slots">
+        {answer.map((tone, i) => {
+          const pickedNote = selected[i];
+          let cls = 'tone-slot';
+          if (graded) cls += tone === pickedNote ? ' correct' : ' wrong';
+          else if (!pickedNote) cls += ' hidden-tone';
+          return (
+            <div key={i} className="tone-slot-wrap">
+              <span className={cls}>
+                {pickedNote
+                  ? displayNote(pickedNote)
+                      .split('/')
+                      .map((name) => <span key={name}>{name}</span>)
+                  : '?'}
               </span>
-            );
-          })}
-        </div>
+              <span className="tone-role">{DEGREE_ROLES[i]}</span>
+            </div>
+          );
+        })}
       </div>
 
       <NotePicker
         selected={selected}
         max={needed}
         onChange={setSelected}
-        disabled={phase === 'graded'}
-        correctNotes={answerNotes}
-        graded={phase === 'graded'}
+        disabled={graded}
+        correctNotes={answer}
+        graded={graded}
       />
-      {mode === 'hard' && (
-        <p className="pick-count">
-          {selected.length}/{needed} selected
-        </p>
-      )}
 
       {phase === 'guessing' ? (
         <button
@@ -155,22 +199,20 @@ export default function ScaleTrainer() {
         </button>
       )}
 
-      {phase === 'graded' && (
+      {graded && (
         <div
           className={correct ? 'result success' : 'result failure'}
           role="status"
         >
           {correct ? (
-            <>✓ Correct! {scaleName} is <strong>{notesDisplay}</strong>.</>
+            <>✓ Correct! {scaleName} is <strong>{answerDisplay}</strong>.</>
           ) : (
             <>
-              ✗ Not quite. {scaleName} is <strong>{notesDisplay}</strong>
-              {mode === 'easy' && (
-                <>
-                  {' '}— the missing note was{' '}
-                  <strong>{displayNote(round.notes[round.hiddenIndex])}</strong>.
-                </>
+              ✗ Not quite. {scaleName} is <strong>{answerDisplay}</strong>
+              {rightNotesWrongOrder && (
+                <> — you had the right notes, but not in scale order</>
               )}
+              .
             </>
           )}
         </div>

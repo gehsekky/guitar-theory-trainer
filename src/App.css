@@ -470,22 +470,38 @@
   line-height: 1.55;
 }
 
-.cheat-sheet {
-  font-family: monospace;
-  font-size: 1.1rem;
-  letter-spacing: 0.05em;
-  color: var(--muted);
+/* Seven equal columns that stay on one row, even on phones. Accidentals
+   stack sharp over flat so they're no wider than a natural. */
+.scale-slots {
+  width: min(100%, 30rem);
+  gap: 0.35rem;
 }
 
-.scale-slots {
-  flex-wrap: wrap;
-  justify-content: center;
+.scale-slots .tone-slot-wrap {
+  flex: 1;
+  min-width: 0;
 }
 
 .scale-slots .tone-slot {
-  min-width: 2.5rem;
-  padding: 0.4rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 3.2rem;
+  padding: 0.3rem 0.1rem;
   font-size: 1.05rem;
+  line-height: 1.15;
+}
+
+@media (max-width: 480px) {
+  .scale-slots {
+    gap: 0.25rem;
+  }
+
+  .scale-slots .tone-slot {
+    font-size: 0.95rem;
+  }
 }
 
 /* ---- Diatonic chord trainer ---- */

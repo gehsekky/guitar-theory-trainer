@@ -170,8 +170,6 @@ export const SCALE_INTERVALS: Record<ScaleType, number[]> = {
   minor: [0, 2, 3, 5, 7, 8, 10],
 };
 
-export const MAJOR_SCALE_PATTERN = ['W', 'W', 'H', 'W', 'W', 'W', 'H'];
-
 /** The seven notes of a scale, in degree order starting from the root. */
 export function scaleNotes(root: Note, type: ScaleType): Note[] {
   const r = NOTE_INDEX[root];
