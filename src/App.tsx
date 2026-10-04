@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ComponentType } from 'react';
 import NeckTrainer from './components/NeckTrainer';
 import ChordFlashcardTrainer from './components/ChordFlashcardTrainer';
 import SheetTrainer from './components/SheetTrainer';
@@ -8,97 +8,49 @@ import ScaleDegreeTrainer from './components/ScaleDegreeTrainer';
 import DiatonicChordTrainer from './components/DiatonicChordTrainer';
 import './App.css';
 
-type Tab =
-  | 'neck'
-  | 'chords'
-  | 'sheet'
-  | 'scale'
-  | 'degree'
-  | 'diatonic'
-  | 'ear';
+// One entry per trainer tab, in display order.
+const TABS = [
+  { id: 'neck', label: 'Neck Notes', Trainer: NeckTrainer },
+  { id: 'chords', label: 'Chord Flashcards', Trainer: ChordFlashcardTrainer },
+  { id: 'sheet', label: 'Sheet Music', Trainer: SheetTrainer },
+  { id: 'scale', label: 'Scales', Trainer: ScaleTrainer },
+  { id: 'degree', label: 'Scale Degrees', Trainer: ScaleDegreeTrainer },
+  { id: 'diatonic', label: 'Diatonic Chords', Trainer: DiatonicChordTrainer },
+  { id: 'ear', label: 'Ear Training', Trainer: EarTrainer },
+] as const satisfies readonly {
+  id: string;
+  label: string;
+  Trainer: ComponentType;
+}[];
+
+type Tab = (typeof TABS)[number]['id'];
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('neck');
+  const { Trainer } = TABS.find((t) => t.id === tab)!;
 
   return (
     <div className="app">
       <header className="app-header">
         <h1>🎸 Guitar Trainer</h1>
         <nav className="tabs" role="tablist" aria-label="Trainers">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'neck'}
-            className={tab === 'neck' ? 'tab active' : 'tab'}
-            onClick={() => setTab('neck')}
-          >
-            Neck Notes
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'chords'}
-            className={tab === 'chords' ? 'tab active' : 'tab'}
-            onClick={() => setTab('chords')}
-          >
-            Chord Flashcards
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'sheet'}
-            className={tab === 'sheet' ? 'tab active' : 'tab'}
-            onClick={() => setTab('sheet')}
-          >
-            Sheet Music
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'scale'}
-            className={tab === 'scale' ? 'tab active' : 'tab'}
-            onClick={() => setTab('scale')}
-          >
-            Scales
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'degree'}
-            className={tab === 'degree' ? 'tab active' : 'tab'}
-            onClick={() => setTab('degree')}
-          >
-            Scale Degrees
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'diatonic'}
-            className={tab === 'diatonic' ? 'tab active' : 'tab'}
-            onClick={() => setTab('diatonic')}
-          >
-            Diatonic Chords
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'ear'}
-            className={tab === 'ear' ? 'tab active' : 'tab'}
-            onClick={() => setTab('ear')}
-          >
-            Ear Training
-          </button>
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.id}
+              className={tab === t.id ? 'tab active' : 'tab'}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
         </nav>
       </header>
 
       <main>
-        {tab === 'neck' && <NeckTrainer />}
-        {tab === 'chords' && <ChordFlashcardTrainer />}
-        {tab === 'sheet' && <SheetTrainer />}
-        {tab === 'scale' && <ScaleTrainer />}
-        {tab === 'degree' && <ScaleDegreeTrainer />}
-        {tab === 'diatonic' && <DiatonicChordTrainer />}
-        {tab === 'ear' && <EarTrainer />}
+        <Trainer key={tab} />
       </main>
     </div>
   );
