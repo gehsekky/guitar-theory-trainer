@@ -178,7 +178,7 @@ export default function DiatonicChordTrainer() {
             <div className="numeral-display">{chord.numeral}</div>
           </div>
 
-          <div className="field-label">Root</div>
+          <div className="field-label">{degreeName} (chord root)</div>
           <NotePicker
             selected={selectedRoot}
             max={1}
