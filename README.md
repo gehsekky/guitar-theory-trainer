@@ -44,7 +44,12 @@ backend — all logic runs client-side and preferences persist in
     dominant 7th, minor 7th, half-diminished 7th, diminished 7th).
 - **Drone** — a sustained root + fifth drone (synthesized) to anchor a key
   while you practice. Tap the big button to play or pause; pick the key from
-  the note grid, and it glides to the new key live.
+  the note grid, and it changes live.
+  - *Sounds:* Synth (detuned sawtooths, slowly breathing filter), Organ
+    (steady drawbar-style sine partials), or Tanpura (modeled on measurements of
+    a real tanpura: a Pa-Sa-Sa-low Sa burst every 8 s, long overlapping ring,
+    and slowly blooming brightness). Switching while playing crossfades for easy
+    comparison.
 
 Accidentals are shown with both enharmonic spellings (e.g. A♯/B♭). Mode and
 key choices are remembered between visits.
