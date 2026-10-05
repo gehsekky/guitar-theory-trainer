@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { midiOf, playMidiChord } from '../audio';
+import { midiOf, playMidiPhrase } from '../audio';
 import {
   EAR_CHORDS_EASY,
   EAR_CHORDS_HARD,
@@ -63,7 +63,14 @@ export default function ChordEarTrainer({ fixedKey }: ChordEarTrainerProps) {
   function play(r: Round = round) {
     const rootMidi = midiOf(r.root, r.octave);
     const midis = r.chord.intervals.map((s) => rootMidi + s);
-    const seconds = playMidiChord(midis);
+    // Arpeggiate low to high so each tone can be picked out, then the chord.
+    const seconds = playMidiPhrase(
+      [
+        ...midis.map((midi) => ({ midis: [midi], duration: 0.7 })),
+        { midis, duration: 2.5 },
+      ],
+      0.1,
+    );
     setHasPlayed(true);
     setIsPlaying(true);
     window.clearTimeout(playTimer.current);
@@ -122,8 +129,8 @@ export default function ChordEarTrainer({ fixedKey }: ChordEarTrainerProps) {
 
       <p className="instructions">
         {mode === 'easy'
-          ? 'A chord plays. Is it major or minor?'
-          : 'A chord plays. Which quality is it?'}
+          ? 'A chord plays note by note, then all together. Is it major or minor?'
+          : 'A chord plays note by note, then all together. Which quality is it?'}
       </p>
 
       <button

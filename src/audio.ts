@@ -74,34 +74,27 @@ function scheduleTone(
   osc.stop(end + RELEASE + 0.05);
 }
 
-/**
- * Play MIDI notes one after another.
- * Returns the total duration in seconds (for UI "is playing" state).
- */
-export function playMidiSequence(
-  midis: number[],
-  noteDuration = 1.2,
-  gap = 0.3,
-): number {
-  const audio = getCtx();
-  const t0 = audio.currentTime + 0.05;
-  midis.forEach((midi, i) => {
-    scheduleTone(audio, midi, t0 + i * (noteDuration + gap), noteDuration);
-  });
-  return midis.length * (noteDuration + gap) - gap + RELEASE;
+/** One step of a phrase: notes that sound together, and for how long. */
+export interface PhraseStep {
+  midis: number[];
+  duration: number;
 }
 
 /**
- * Play MIDI notes simultaneously as a chord.
- * Returns the total duration in seconds.
+ * Play steps one after another, `gap` seconds apart; each step's notes sound
+ * together. Returns the total duration in seconds (for UI "is playing" state).
  */
-export function playMidiChord(midis: number[], duration = 2.5): number {
+export function playMidiPhrase(steps: PhraseStep[], gap = 0.3): number {
   const audio = getCtx();
-  const t0 = audio.currentTime + 0.05;
-  // Scale each voice so the summed chord stays clear of clipping.
-  const peak = PEAK_GAIN / Math.sqrt(midis.length);
-  midis.forEach((midi) => scheduleTone(audio, midi, t0, duration, peak));
-  return duration + RELEASE;
+  let t = audio.currentTime + 0.05;
+  const t0 = t;
+  steps.forEach(({ midis, duration }, i) => {
+    // Scale each voice so stacked notes stay clear of clipping.
+    const peak = PEAK_GAIN / Math.sqrt(midis.length);
+    for (const midi of midis) scheduleTone(audio, midi, t, duration, peak);
+    t += duration + (i < steps.length - 1 ? gap : 0);
+  });
+  return t - t0 + RELEASE;
 }
 
 // ---- Drone ---------------------------------------------------------------

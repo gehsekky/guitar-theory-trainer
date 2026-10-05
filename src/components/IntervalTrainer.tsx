@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { midiOf, playMidiSequence } from '../audio';
+import { midiOf, playMidiPhrase } from '../audio';
 import {
   INTERVALS,
   displayNote,
@@ -44,7 +44,14 @@ export default function IntervalTrainer({ fixedKey }: IntervalTrainerProps) {
 
   function play(r: Round = round) {
     const root = midiOf(r.tonic, r.octave);
-    const seconds = playMidiSequence([root, root + r.interval.semitones]);
+    const upper = root + r.interval.semitones;
+    // Melodic (one after the other), then harmonic (together) to hear the
+    // interval's combined color.
+    const seconds = playMidiPhrase([
+      { midis: [root], duration: 1.2 },
+      { midis: [upper], duration: 1.2 },
+      { midis: [root, upper], duration: 1.8 },
+    ]);
     setHasPlayed(true);
     setIsPlaying(true);
     window.clearTimeout(playTimer.current);
@@ -74,7 +81,8 @@ export default function IntervalTrainer({ fixedKey }: IntervalTrainerProps) {
   return (
     <div className="ear-game">
       <p className="instructions">
-        The tonic plays first, then a second note. Which interval do you hear?
+        The tonic plays, then a second note, then both together. Which
+        interval do you hear?
       </p>
 
       <div className="key-label">Key: {displayNote(round.tonic)}</div>

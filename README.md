@@ -37,11 +37,12 @@ backend — all logic runs client-side and preferences persist in
   - *Name Numeral:* given a key and a chord, pick its Roman numeral.
 - **Ear Training** — tones are synthesized with the Web Audio API. The key can
   be random each round or fixed to a chosen note; both games share it.
-  - *Intervals:* hear a tonic then a second note and name the interval
-    (minor 2nd through octave).
-  - *Chords:* hear a chord and name its quality. Easy is major/minor; hard
-    adds diminished, augmented, and five seventh chords (major 7th,
-    dominant 7th, minor 7th, half-diminished 7th, diminished 7th).
+  - *Intervals:* hear a tonic, then a second note, then both together, and
+    name the interval (minor 2nd through octave).
+  - *Chords:* hear a chord note by note (low to high), then all together, and
+    name its quality. Easy is major/minor; hard adds diminished, augmented,
+    and five seventh chords (major 7th, dominant 7th, minor 7th,
+    half-diminished 7th, diminished 7th).
 - **Drone** — a sustained root + fifth drone (synthesized) to anchor a key
   while you practice. Tap the big button to play or pause; pick the key from
   the note grid, and it changes live.
