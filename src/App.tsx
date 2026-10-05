@@ -6,6 +6,7 @@ import ScaleTrainer from './components/ScaleTrainer';
 import EarTrainer from './components/EarTrainer';
 import ScaleDegreeTrainer from './components/ScaleDegreeTrainer';
 import DiatonicChordTrainer from './components/DiatonicChordTrainer';
+import DroneTrainer from './components/DroneTrainer';
 import './App.css';
 
 // One entry per trainer tab, in display order.
@@ -17,6 +18,7 @@ const TABS = [
   { id: 'degree', label: 'Scale Degrees', Trainer: ScaleDegreeTrainer },
   { id: 'diatonic', label: 'Diatonic Chords', Trainer: DiatonicChordTrainer },
   { id: 'ear', label: 'Ear Training', Trainer: EarTrainer },
+  { id: 'drone', label: 'Drone', Trainer: DroneTrainer },
 ] as const satisfies readonly {
   id: string;
   label: string;

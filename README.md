@@ -42,6 +42,9 @@ backend — all logic runs client-side and preferences persist in
   - *Chords:* hear a chord and name its quality. Easy is major/minor; hard
     adds diminished, augmented, and five seventh chords (major 7th,
     dominant 7th, minor 7th, half-diminished 7th, diminished 7th).
+- **Drone** — a sustained root + fifth drone (synthesized) to anchor a key
+  while you practice. Tap the big button to play or pause; pick the key from
+  the note grid, and it glides to the new key live.
 
 Accidentals are shown with both enharmonic spellings (e.g. A♯/B♭). Mode and
 key choices are remembered between visits.

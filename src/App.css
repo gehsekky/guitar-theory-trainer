@@ -262,6 +262,54 @@
   opacity: 1;
 }
 
+/* ---- Drone ---- */
+
+.drone-btn {
+  display: grid;
+  place-items: center;
+  width: 9rem;
+  height: 9rem;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--muted);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.12);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.drone-btn.playing {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Hover only where it's real; on phones a tap leaves :hover stuck. */
+@media (hover: hover) {
+  .drone-btn:hover {
+    border-color: var(--accent);
+  }
+
+  .drone-btn.playing:hover {
+    background: var(--accent-dark);
+  }
+}
+
+.drone-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  fill: currentColor;
+}
+
+.drone-key {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.drone-notes {
+  font-weight: 400;
+  color: var(--muted);
+}
+
 /* ---- Buttons & result ---- */
 
 .primary-btn {

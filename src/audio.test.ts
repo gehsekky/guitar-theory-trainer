@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { freqOfMidi, midiOf } from './audio';
+import { droneMidis, freqOfMidi, midiOf } from './audio';
 
 describe('midiOf', () => {
   it.each([
@@ -28,5 +28,17 @@ describe('freqOfMidi', () => {
 
   it('gives middle C ≈ 261.63 Hz', () => {
     expect(freqOfMidi(60)).toBeCloseTo(261.63, 2);
+  });
+});
+
+describe('droneMidis', () => {
+  it('stacks a low root, the root, and the fifth', () => {
+    // A3 = 57: A2, A3, E4
+    expect(droneMidis('A')).toEqual([45, 57, 64]);
+  });
+
+  it('keeps every key in the same octave band', () => {
+    expect(droneMidis('C')).toEqual([36, 48, 55]);
+    expect(droneMidis('B')).toEqual([47, 59, 66]);
   });
 });
