@@ -46,10 +46,11 @@ backend — all logic runs client-side and preferences persist in
   while you practice. Tap the big button to play or pause; pick the key from
   the note grid, and it changes live.
   - *Sounds:* Synth (detuned sawtooths, slowly breathing filter), Organ
-    (steady drawbar-style sine partials), or Tanpura (modeled on measurements of
-    a real tanpura: a Pa-Sa-Sa-low Sa burst every 8 s, long overlapping ring,
-    and slowly blooming brightness). Switching while playing crossfades for easy
-    comparison.
+    (steady drawbar-style sine partials), or Tanpura (modeled on measurements
+    of a real tanpura: Pa, Sa, Sa, low Sa plucked across an 8 s cycle with a
+    little human timing variation, soft attacks, long overlapping ring, and
+    a buzz that blooms after each pluck). Switching while playing crossfades
+    for easy comparison.
 
 Accidentals are shown with both enharmonic spellings (e.g. A♯/B♭). Mode and
 key choices are remembered between visits.

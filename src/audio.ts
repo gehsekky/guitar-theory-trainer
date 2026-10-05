@@ -194,24 +194,28 @@ function organVoice(audio: AudioContext, out: AudioNode, root: Note): DroneVoice
 }
 
 /**
- * Tanpura modeled on measurements of a real recording: a burst of four
- * plucks (Pa, Sa, Sa, low Sa, with Pa a fourth below Sa) every 8 s, notes
+ * Tanpura modeled on measurements of a real recording: four plucks (Pa, Sa,
+ * Sa, low Sa, with Pa a fourth below Sa) spread across an 8 s cycle, notes
  * that ring until re-plucked, weak fundamentals with strong 4th-7th
- * harmonics and a resonance near 1.25 kHz, and brightness that swells in
- * slow waves after each pluck (the jawari "bloom").
+ * harmonics and a resonance near 1.25 kHz, and a buzz that builds just
+ * after each pluck, then mellows (the jawari "bloom").
  */
 function tanpuraVoice(audio: AudioContext, out: AudioNode, root: Note): DroneVoice {
   const CYCLE = 8;
-  const PLUCK_GAP = 0.4;
   const RING = 16; // seconds each pluck is kept alive
   const DECAY_TC = 12; // ~-6 dB by the next pluck of the same string
+  // A soft swell, not a click: the recording's plucks take 80-490 ms to rise.
+  const ATTACK = 0.06;
+  // Humanize: each pluck lands up to this far early or late, like a player.
+  const JITTER = 0.2;
   const LOOKAHEAD = 0.5;
-  // [semitones from root, level] in pluck order: Pa, Sa, Sa, low Sa.
-  const STRINGS: [number, number][] = [
-    [-5, 0.8],
-    [0, 1],
-    [0, 1],
-    [-12, 0.9],
+  // [semitones from root, level, seconds into the cycle] in pluck order:
+  // Pa, Sa, Sa, low Sa. The slightly uneven spacing is the recording's.
+  const STRINGS: [number, number, number][] = [
+    [-5, 0.8, 0],
+    [0, 1, 2.3],
+    [0, 1, 4.9],
+    [-12, 0.9, 6.3],
   ];
 
   // Weak fundamental, a strong octave (the recording's main Sa sits an
@@ -237,7 +241,10 @@ function tanpuraVoice(audio: AudioContext, out: AudioNode, root: Note): DroneVoi
 
   let rootMidi = midiOf(root, 3);
   let step = 0;
-  let nextTime = audio.currentTime + 0.05;
+  let cycleStart = audio.currentTime + 0.05;
+  const newJitter = () => (Math.random() * 2 - 1) * JITTER;
+  // Drawn once per pluck, so re-running the scheduler doesn't re-roll it.
+  let jitter = newJitter();
   const ringing = new Set<GainNode>();
 
   function pluck(midi: number, level: number, t: number) {
@@ -245,23 +252,21 @@ function tanpuraVoice(audio: AudioContext, out: AudioNode, root: Note): DroneVoi
     osc.setPeriodicWave(wave);
     osc.frequency.value = freqOfMidi(midi);
 
-    // Bloom: brightness dips after the attack, then swells in slow waves.
+    // Bloom: the buzz builds for a moment after the pluck, then mellows.
     // A little jitter keeps repeats from sounding mechanical.
     const j = () => 1 + (Math.random() - 0.5) * 0.2;
     const filter = audio.createBiquadFilter();
     filter.type = 'lowpass';
     filter.Q.value = 0.9;
-    filter.frequency.setValueAtTime(1800 * j(), t);
-    filter.frequency.linearRampToValueAtTime(750 * j(), t + 1.2);
-    filter.frequency.linearRampToValueAtTime(1900 * j(), t + 2.4);
-    filter.frequency.linearRampToValueAtTime(950 * j(), t + 4);
-    filter.frequency.linearRampToValueAtTime(2100 * j(), t + 6);
-    filter.frequency.linearRampToValueAtTime(900 * j(), t + RING);
+    filter.frequency.setValueAtTime(2200 * j(), t);
+    filter.frequency.linearRampToValueAtTime(3400 * j(), t + 0.35);
+    filter.frequency.exponentialRampToValueAtTime(1500 * j(), t + 1.5);
+    filter.frequency.exponentialRampToValueAtTime(1000, t + RING);
 
     const gain = audio.createGain();
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(level, t + 0.005);
-    gain.gain.setTargetAtTime(0, t + 0.005, DECAY_TC);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(level, t + ATTACK);
+    gain.gain.setTargetAtTime(0, t + ATTACK, DECAY_TC);
 
     osc.connect(filter).connect(gain).connect(resonance);
     osc.start(t);
@@ -271,12 +276,17 @@ function tanpuraVoice(audio: AudioContext, out: AudioNode, root: Note): DroneVoi
   }
 
   function schedule() {
-    while (nextTime < audio.currentTime + LOOKAHEAD) {
-      const i = step % STRINGS.length;
-      const [offset, level] = STRINGS[i];
-      pluck(rootMidi + offset, level, nextTime);
+    for (;;) {
+      const [semitones, level, at] = STRINGS[step];
+      const t = Math.max(cycleStart + at + jitter, audio.currentTime + 0.02);
+      if (t >= audio.currentTime + LOOKAHEAD) break;
+      pluck(rootMidi + semitones, level, t);
+      jitter = newJitter();
       step += 1;
-      nextTime += i === STRINGS.length - 1 ? CYCLE - PLUCK_GAP * (STRINGS.length - 1) : PLUCK_GAP;
+      if (step === STRINGS.length) {
+        step = 0;
+        cycleStart += CYCLE;
+      }
     }
   }
   schedule();
@@ -292,7 +302,7 @@ function tanpuraVoice(audio: AudioContext, out: AudioNode, root: Note): DroneVoi
       }
       rootMidi = midiOf(next, 3);
       step = 0;
-      nextTime = t + 0.15;
+      cycleStart = t + 0.15;
       schedule();
     },
     stop() {
