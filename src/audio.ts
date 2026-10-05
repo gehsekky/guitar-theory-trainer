@@ -22,29 +22,56 @@ export function freqOfMidi(midi: number): number {
   return 440 * 2 ** ((midi - 69) / 12);
 }
 
-const ATTACK = 0.015;
-const PEAK_GAIN = 0.35;
+// Tone envelope: a quick swell, a settle to a sustained level that holds
+// for the whole note, then a short fade. (A tone that decays from the start
+// is audible for only a fraction of its nominal length.)
+const ATTACK = 0.02;
+const SETTLE_TIME_CONSTANT = 0.25;
+const SUSTAIN = 0.65; // fraction of peak held after the settle
+const RELEASE = 0.25;
+// Peak level of a single tone; chords scale each voice down to avoid clipping.
+const PEAK_GAIN = 0.3;
 
-/** Schedule a single plucked-style tone. Returns its end time. */
+// A warm tone with gentle overtones, so pitch reads clearly even on phone
+// speakers that barely reproduce the fundamental of low notes.
+const TONE_PARTIALS = [0, 1, 0.5, 0.33, 0.22, 0.14, 0.09, 0.05];
+const toneWaves = new WeakMap<AudioContext, PeriodicWave>();
+
+function toneWave(audio: AudioContext): PeriodicWave {
+  let wave = toneWaves.get(audio);
+  if (!wave) {
+    wave = audio.createPeriodicWave(
+      new Float32Array(TONE_PARTIALS.length),
+      Float32Array.from(TONE_PARTIALS),
+    );
+    toneWaves.set(audio, wave);
+  }
+  return wave;
+}
+
+/** Schedule a single sustained tone. It finishes fading RELEASE s after `duration`. */
 function scheduleTone(
   audio: AudioContext,
   midi: number,
   start: number,
   duration: number,
-): number {
+  peak = PEAK_GAIN,
+) {
   const osc = audio.createOscillator();
   const gain = audio.createGain();
-  osc.type = 'triangle';
+  osc.setPeriodicWave(toneWave(audio));
   osc.frequency.value = freqOfMidi(midi);
 
-  gain.gain.setValueAtTime(0.0001, start);
-  gain.gain.exponentialRampToValueAtTime(PEAK_GAIN, start + ATTACK);
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  const end = start + duration;
+  gain.gain.setValueAtTime(0, start);
+  gain.gain.linearRampToValueAtTime(peak, start + ATTACK);
+  gain.gain.setTargetAtTime(peak * SUSTAIN, start + ATTACK, SETTLE_TIME_CONSTANT);
+  gain.gain.setValueAtTime(peak * SUSTAIN, end);
+  gain.gain.linearRampToValueAtTime(0, end + RELEASE);
 
   osc.connect(gain).connect(audio.destination);
   osc.start(start);
-  osc.stop(start + duration + 0.05);
-  return start + duration;
+  osc.stop(end + RELEASE + 0.05);
 }
 
 /**
@@ -53,26 +80,28 @@ function scheduleTone(
  */
 export function playMidiSequence(
   midis: number[],
-  noteDuration = 0.9,
-  gap = 0.2,
+  noteDuration = 1.2,
+  gap = 0.3,
 ): number {
   const audio = getCtx();
   const t0 = audio.currentTime + 0.05;
   midis.forEach((midi, i) => {
     scheduleTone(audio, midi, t0 + i * (noteDuration + gap), noteDuration);
   });
-  return midis.length * (noteDuration + gap);
+  return midis.length * (noteDuration + gap) - gap + RELEASE;
 }
 
 /**
  * Play MIDI notes simultaneously as a chord.
  * Returns the total duration in seconds.
  */
-export function playMidiChord(midis: number[], duration = 1.6): number {
+export function playMidiChord(midis: number[], duration = 2.5): number {
   const audio = getCtx();
   const t0 = audio.currentTime + 0.05;
-  midis.forEach((midi) => scheduleTone(audio, midi, t0, duration));
-  return duration;
+  // Scale each voice so the summed chord stays clear of clipping.
+  const peak = PEAK_GAIN / Math.sqrt(midis.length);
+  midis.forEach((midi) => scheduleTone(audio, midi, t0, duration, peak));
+  return duration + RELEASE;
 }
 
 // ---- Drone ---------------------------------------------------------------
