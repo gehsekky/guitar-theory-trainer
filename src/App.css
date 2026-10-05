@@ -13,6 +13,10 @@
   font-size: 1.5rem;
 }
 
+.title-short {
+  display: none;
+}
+
 /* ---- Tabs ---- */
 
 .tabs {
@@ -37,8 +41,34 @@
   color: #fff;
 }
 
-/* Phones: collapse to the active tab until it's tapped again. */
+/* Phones: a compact "GTT" header with the tab pill beside it. The tabs
+   collapse to the active one until it's tapped; expanded, they wrap in the
+   space to the right of the title. */
 @media (max-width: 600px) {
+  .app-header {
+    flex-wrap: nowrap;
+    align-items: baseline;
+    justify-content: flex-start;
+    margin-bottom: 0.75rem;
+  }
+
+  .app-header h1 {
+    flex-shrink: 0;
+  }
+
+  .title-full {
+    display: none;
+  }
+
+  .title-short {
+    display: inline;
+  }
+
+  .tabs {
+    flex: 1;
+    min-width: 0;
+  }
+
   .tabs:not(.expanded) .tab:not(.active) {
     display: none;
   }
@@ -63,6 +93,19 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.5rem;
+}
+
+/* On phones the tab pill already names the trainer, so the heading is only
+   kept for screen readers. */
+@media (max-width: 600px) {
+  .trainer > h2 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 .instructions {

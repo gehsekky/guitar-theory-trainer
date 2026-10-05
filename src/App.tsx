@@ -34,7 +34,10 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>🎸 Guitar Theory Trainer</h1>
+        <h1 aria-label="Guitar Theory Trainer">
+          🎸 <span className="title-full">Guitar Theory Trainer</span>
+          <span className="title-short">GTT</span>
+        </h1>
         <nav
           className={tabsExpanded ? 'tabs expanded' : 'tabs'}
           role="tablist"
