@@ -7,10 +7,12 @@ export interface FretboardMarker {
 
 interface FretboardProps {
   marker?: FretboardMarker;
+  /** Indices into STRINGS to draw normally; the rest are dimmed. Default: all. */
+  activeStrings?: number[];
 }
 
 // SVG layout constants
-const NUT_X = 44;
+const NUT_X = 60; // leaves room for string labels and open-string markers
 const FRET_SPACING = 38;
 const STRING_SPACING = 26;
 const TOP = 24;
@@ -36,7 +38,9 @@ function stringY(stringIndex: number): number {
   return TOP + STRING_SPACING * (STRINGS.length - 1 - stringIndex);
 }
 
-export default function Fretboard({ marker }: FretboardProps) {
+export default function Fretboard({ marker, activeStrings }: FretboardProps) {
+  const dimmed = (i: number) => activeStrings && !activeStrings.includes(i);
+
   return (
     <div className="fretboard-scroll">
       <svg
@@ -108,7 +112,7 @@ export default function Fretboard({ marker }: FretboardProps) {
             y1={stringY(i)}
             x2={NUT_X + FRET_SPACING * FRET_COUNT}
             y2={stringY(i)}
-            className="fb-string"
+            className={dimmed(i) ? 'fb-string dimmed' : 'fb-string'}
             // thicker lines for lower strings
             strokeWidth={2.4 - i * 0.3}
           />
@@ -116,7 +120,12 @@ export default function Fretboard({ marker }: FretboardProps) {
 
         {/* Open-string labels */}
         {STRINGS.map((s, i) => (
-          <text key={i} x={14} y={stringY(i) + 4} className="fb-label">
+          <text
+            key={i}
+            x={14}
+            y={stringY(i) + 4}
+            className={dimmed(i) ? 'fb-label dimmed' : 'fb-label'}
+          >
             {s.label}
           </text>
         ))}

@@ -9,6 +9,8 @@ backend — all logic runs client-side and preferences persist in
 
 - **Neck Notes** — a position (open string through fret 22) is marked on an
   SVG fretboard; name the note.
+  - *Strings:* toggle which strings the note can land on — one string for
+    single-string drills, any combination, or All. Off strings are dimmed.
 - **Chord Flashcards** — a flashcard shows a root note and chord type; spell
   the chord in root position by picking its notes in order (root, 3rd, 5th,
   and 7th for seventh chords). Order is graded.
