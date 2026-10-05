@@ -72,8 +72,18 @@
 
 /* ---- Fretboard ---- */
 
-.fretboard-scroll {
+/* Pinned string names on the left; only the board itself scrolls. */
+.fretboard-area {
+  display: flex;
   max-width: 100%;
+}
+
+.fretboard-labels {
+  flex-shrink: 0;
+}
+
+.fretboard-scroll {
+  min-width: 0;
   overflow-x: auto;
 }
 
