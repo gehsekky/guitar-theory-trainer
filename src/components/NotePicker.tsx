@@ -1,4 +1,4 @@
-import { CHROMATIC, displayNote, type Note } from '../music';
+import { CHROMATIC, displayNote, type Note } from '../theory';
 
 interface NotePickerProps {
   /** Currently selected notes. */

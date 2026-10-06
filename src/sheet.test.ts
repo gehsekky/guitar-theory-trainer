@@ -16,7 +16,7 @@ import {
   stepOf,
   type KeyDef,
 } from './sheet';
-import { NOTE_INDEX, scaleNotes, type Note } from './music';
+import { NOTE_INDEX, scaleNotes, type Note } from './theory';
 
 function key(name: string): KeyDef {
   const k = KEYS.find((k) => k.name === name);

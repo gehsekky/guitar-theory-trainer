@@ -12,6 +12,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@tonaljs/chord": "6.1.2",
+    "@tonaljs/chord-type": "5.1.1",
+    "@tonaljs/interval": "5.1.0",
+    "@tonaljs/mode": "4.9.2",
+    "@tonaljs/note": "4.12.1",
+    "@tonaljs/scale": "4.13.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
@@ -29,5 +35,8 @@
     "workbox-routing": "^7.4.1",
     "workbox-strategies": "^7.4.1",
     "workbox-window": "^7.4.1"
+  },
+  "overrides": {
+    "@tonaljs/pitch-interval": "6.1.0"
   }
 }

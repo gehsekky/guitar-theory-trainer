@@ -4,13 +4,13 @@ import {
   CHROMATIC,
   NATURAL_NOTES,
   displayNote,
-  pick,
   sameNoteOrder,
   sameNoteSet,
   scaleNotes,
   type Note,
   type ScaleType,
-} from '../music';
+} from '../theory';
+import { pick } from '../random';
 
 type Theme = 'major' | 'minor' | 'all';
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import IntervalTrainer from './IntervalTrainer';
 import ChordEarTrainer from './ChordEarTrainer';
-import { CHROMATIC, displayNote, type Note } from '../music';
+import { CHROMATIC, displayNote, type Note } from '../theory';
 
 // Sub-trainers within Ear Training. Future: 'note' (identify a played
 // single note) slots in here alongside intervals and chords.

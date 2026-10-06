@@ -4,13 +4,11 @@ import {
   DEGREE_INFO,
   DEGREE_NAMES,
   displayNote,
-  pick,
-  randomInt,
-  randomNote,
   scaleNotes,
   type Note,
   type ScaleType,
-} from '../music';
+} from '../theory';
+import { pick, randomInt, randomNote } from '../random';
 
 type Mode = 'easy' | 'hard';
 

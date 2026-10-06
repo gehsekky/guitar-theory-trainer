@@ -3,12 +3,11 @@ import { midiOf, playMidiPhrase } from '../audio';
 import {
   INTERVALS,
   displayNote,
-  pick,
-  randomNote,
   transpose,
   type Interval,
   type Note,
-} from '../music';
+} from '../theory';
+import { pick, randomNote } from '../random';
 
 interface Round {
   tonic: Note;

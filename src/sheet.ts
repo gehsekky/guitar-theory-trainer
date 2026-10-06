@@ -1,6 +1,6 @@
 // Sheet-music helpers: key signatures, staff positions, durations.
 
-import { CHROMATIC, NOTE_INDEX, type Note } from './music';
+import { CHROMATIC, NOTE_INDEX, type Note } from './theory';
 
 export const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'] as const;
 export type Letter = (typeof LETTERS)[number];

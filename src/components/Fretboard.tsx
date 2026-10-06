@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { FRET_COUNT, STRINGS } from '../music';
+import { FRET_COUNT, STRINGS } from '../theory';
 
 export interface FretboardMarker {
   stringIndex: number; // index into STRINGS (0 = low E)

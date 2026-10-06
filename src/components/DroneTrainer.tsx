@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import NotePicker from './NotePicker';
 import { startDrone, type Drone, type DroneSound } from '../audio';
-import { CHROMATIC, displayNote, transpose, type Note } from '../music';
+import { CHROMATIC, displayNote, transpose, type Note } from '../theory';
 import { useWakeLock } from '../useWakeLock';
 
 const SOUNDS: { id: DroneSound; label: string }[] = [

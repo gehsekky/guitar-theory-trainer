@@ -5,11 +5,10 @@ import {
   EAR_CHORDS_HARD,
   chordNotes,
   displayNote,
-  pick,
-  randomNote,
   type ChordType,
   type Note,
-} from '../music';
+} from '../theory';
+import { pick, randomNote } from '../random';
 
 type Mode = 'easy' | 'hard';
 

@@ -102,8 +102,29 @@ npm run preview` to try offline behavior locally.
 - Web Audio API for tone generation
 - `vite-plugin-pwa` + Workbox for the installable, offline-capable PWA
 - Inline SVG for the fretboard and musical staff
-- Vitest for unit tests (`src/*.test.ts`), covering the theory, staff, and
+- [Tonal](https://github.com/tonaljs/tonal) for core music theory (scales,
+  chords, intervals, modes)
+- Vitest for unit tests (`src/**/*.test.ts`), covering the theory, staff, and
   pitch helpers
 
-No external UI or music-theory libraries — the theory (scales, triads,
-intervals, key signatures) and rendering are implemented from scratch.
+### Theory layer (`src/theory/`)
+
+Trainers import music theory only from `src/theory`, never from Tonal
+directly, so the library stays an implementation detail:
+
+- `pitch.ts`: pitch classes (the `Note` type), spelling → pitch class
+- `scales.ts`: the scales the app teaches; adding one is a single `SCALES`
+  entry naming a Tonal scale
+- `chords.ts`: one `CHORD_TYPES` registry shared by every trainer
+- `diatonic.ts`: diatonic chords and Roman numerals, derived from each
+  scale's mode
+- `degrees.ts`: scale-degree names and descriptions (teaching content)
+- `intervals.ts`: the intervals the ear trainer uses
+- `guitar.ts`: tuning and fretboard, kept free of app code
+
+The `@tonaljs/*` packages are pinned to exact versions, with an `overrides`
+entry for `@tonaljs/pitch-interval`, because Tonal's 2026-09-28 release
+was published with missing `main`/`types` files.
+
+UI and rendering (fretboard, staff, synthesized audio) use no external
+libraries.

@@ -1,28 +1,27 @@
 import { useState } from 'react';
 import NotePicker from './NotePicker';
 import {
+  CHORD_TYPES,
   CHROMATIC,
   NATURAL_NOTES,
   chordNotes,
   displayNote,
-  pick,
   sameNoteOrder,
   sameNoteSet,
   type ChordType,
   type Note,
-} from '../music';
+} from '../theory';
+import { pick } from '../random';
 
 type Theme = 'major' | 'minor' | 'maj7' | 'all';
 
-const MAJOR: ChordType = { name: 'major', intervals: [0, 4, 7] };
-const MINOR: ChordType = { name: 'minor', intervals: [0, 3, 7] };
-const MAJOR_7TH: ChordType = { name: 'major 7th', intervals: [0, 4, 7, 11] };
+const { major, minor, major7 } = CHORD_TYPES;
 
 const THEMES: { id: Theme; label: string; chords: ChordType[] }[] = [
-  { id: 'major', label: 'Major', chords: [MAJOR] },
-  { id: 'minor', label: 'Minor', chords: [MINOR] },
-  { id: 'maj7', label: 'Major 7th', chords: [MAJOR_7TH] },
-  { id: 'all', label: 'All', chords: [MAJOR, MINOR, MAJOR_7TH] },
+  { id: 'major', label: 'Major', chords: [major] },
+  { id: 'minor', label: 'Minor', chords: [minor] },
+  { id: 'maj7', label: 'Major 7th', chords: [major7] },
+  { id: 'all', label: 'All', chords: [major, minor, major7] },
 ];
 
 // Root-position role of each chord tone, by slot.

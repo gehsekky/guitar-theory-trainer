@@ -1,15 +1,8 @@
 import { useState } from 'react';
 import Fretboard, { type FretboardMarker } from './Fretboard';
 import NotePicker from './NotePicker';
-import {
-  FRET_COUNT,
-  STRINGS,
-  displayNote,
-  noteAt,
-  pick,
-  randomInt,
-  type Note,
-} from '../music';
+import { FRET_COUNT, STRINGS, displayNote, noteAt, type Note } from '../theory';
+import { pick, randomInt } from '../random';
 
 const ALL_STRINGS = STRINGS.map((_s, i) => i);
 // Low to high, as guitarists spell the tuning: E A D G B e.

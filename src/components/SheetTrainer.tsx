@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import NotePicker from './NotePicker';
 import SheetStaff from './SheetStaff';
-import { displayNote, pick, randomInt, type Note } from '../music';
+import { displayNote, type Note } from '../theory';
+import { pick, randomInt } from '../random';
 import {
   DURATIONS,
   DURATION_LABEL,

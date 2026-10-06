@@ -1,5 +1,6 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+  CHORD_TYPES,
   CHROMATIC,
   DEGREE_INFO,
   DEGREE_NAMES,
@@ -18,16 +19,13 @@ import {
   diatonicTriad,
   displayNote,
   noteAt,
-  pick,
-  randomInt,
-  randomNote,
+  pitchClass,
   sameNoteOrder,
   sameNoteSet,
   scaleNotes,
   transpose,
   triadNotes,
-  type Note,
-} from './music';
+} from './index';
 
 describe('chromatic scale', () => {
   it('has 12 unique notes indexed consistently', () => {
@@ -279,25 +277,35 @@ describe('sameNoteSet', () => {
   });
 });
 
-describe('random helpers', () => {
-  afterEach(() => vi.restoreAllMocks());
-
-  it('randomInt stays in [0, max)', () => {
-    vi.spyOn(Math, 'random').mockReturnValue(0);
-    expect(randomInt(7)).toBe(0);
-    vi.spyOn(Math, 'random').mockReturnValue(0.9999);
-    expect(randomInt(7)).toBe(6);
+describe('pitchClass', () => {
+  it('maps any spelling to the sharp-named pitch class', () => {
+    expect(pitchClass('Bb')).toBe('A#');
+    expect(pitchClass('E#')).toBe('F');
+    expect(pitchClass('Cb')).toBe('B');
+    expect(pitchClass('C##')).toBe('D');
+    expect(pitchClass('Ebb')).toBe('D');
+    expect(pitchClass('G#4')).toBe('G#');
   });
 
-  it('randomNote and pick return members of their input', () => {
-    for (let i = 0; i < 50; i++) {
-      expect(CHROMATIC).toContain(randomNote());
-      expect(['x', 'y', 'z']).toContain(pick(['x', 'y', 'z']));
-    }
+  it('round-trips every pitch class', () => {
+    for (const note of CHROMATIC) expect(pitchClass(note)).toBe(note);
   });
 
-  it('pick maps the random value onto the list', () => {
-    vi.spyOn(Math, 'random').mockReturnValue(0.5);
-    expect(pick<Note>(['C', 'D', 'E', 'F'])).toBe('E');
+  it('rejects non-notes', () => {
+    expect(() => pitchClass('H')).toThrow();
+  });
+});
+
+describe('chord types (from Tonal)', () => {
+  it('have the expected intervals', () => {
+    expect(CHORD_TYPES.major.intervals).toEqual([0, 4, 7]);
+    expect(CHORD_TYPES.minor.intervals).toEqual([0, 3, 7]);
+    expect(CHORD_TYPES.diminished.intervals).toEqual([0, 3, 6]);
+    expect(CHORD_TYPES.augmented.intervals).toEqual([0, 4, 8]);
+    expect(CHORD_TYPES.major7.intervals).toEqual([0, 4, 7, 11]);
+    expect(CHORD_TYPES.dominant7.intervals).toEqual([0, 4, 7, 10]);
+    expect(CHORD_TYPES.minor7.intervals).toEqual([0, 3, 7, 10]);
+    expect(CHORD_TYPES.halfDiminished7.intervals).toEqual([0, 3, 6, 10]);
+    expect(CHORD_TYPES.diminished7.intervals).toEqual([0, 3, 6, 9]);
   });
 });

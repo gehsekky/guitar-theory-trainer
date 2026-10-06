@@ -1,7 +1,7 @@
 // Web Audio engine: note → frequency math and tone playback.
 // Kept generic (sequences, chords) so future ear trainers can reuse it.
 
-import { NOTE_INDEX, type Note } from './music';
+import { NOTE_INDEX, type Note } from './theory';
 
 let ctx: AudioContext | null = null;
 

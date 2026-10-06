@@ -6,12 +6,11 @@ import {
   QUALITY_LABEL,
   diatonicTriad,
   displayNote,
-  randomInt,
-  randomNote,
   scaleNotes,
   type Note,
   type Quality,
-} from '../music';
+} from '../theory';
+import { randomInt, randomNote } from '../random';
 
 // Both major and natural-minor keys only ever produce these three qualities.
 const FIND_QUALITIES: Quality[] = ['major', 'minor', 'diminished'];
