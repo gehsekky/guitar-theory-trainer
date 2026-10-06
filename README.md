@@ -76,11 +76,31 @@ tests, and the production build, then publishes `dist/` to GitHub Pages
 (`.github/workflows/deploy.yml`). The custom domain is configured in the
 repo's Pages settings.
 
+## Installing as an app (PWA)
+
+The site is a progressive web app: it can be installed to a phone's home
+screen or the desktop (iPhone: Share → Add to Home Screen; Android/desktop
+Chrome: the install prompt or menu item), opens in its own window without
+browser bars, and works offline after the first visit.
+
+The service worker (`src/sw.ts`, built by `vite-plugin-pwa`) uses this update
+strategy:
+
+- **The page is network-first.** Opening the app while online always loads
+  the latest deploy, with no "new version available" reload mid-practice;
+  offline, the last cached copy is used.
+- **Build assets are cache-first.** JS, CSS, and icons are content-hashed and
+  precached, so they never go stale.
+
+The service worker only runs in production builds; use `npm run build &&
+npm run preview` to try offline behavior locally.
+
 ## Tech
 
 - React 19 + TypeScript
 - Vite
 - Web Audio API for tone generation
+- `vite-plugin-pwa` + Workbox for the installable, offline-capable PWA
 - Inline SVG for the fretboard and musical staff
 - Vitest for unit tests (`src/*.test.ts`), covering the theory, staff, and
   pitch helpers
