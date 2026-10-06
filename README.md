@@ -45,7 +45,8 @@ backend — all logic runs client-side and preferences persist in
     half-diminished 7th, diminished 7th).
 - **Drone** — a sustained root + fifth drone (synthesized) to anchor a key
   while you practice. Tap the big button to play or pause; pick the key from
-  the note grid, and it changes live.
+  the note grid, and it changes live. The screen stays on while it plays
+  (where the browser supports the Screen Wake Lock API).
   - *Sounds:* Synth (detuned sawtooths, slowly breathing filter), Organ
     (steady drawbar-style sine partials), or Tanpura (modeled on measurements
     of a real tanpura: Pa, Sa, Sa, low Sa plucked across an 8 s cycle with a

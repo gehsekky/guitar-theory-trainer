@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import NotePicker from './NotePicker';
 import { startDrone, type Drone, type DroneSound } from '../audio';
 import { CHROMATIC, displayNote, transpose, type Note } from '../music';
+import { useWakeLock } from '../useWakeLock';
 
 const SOUNDS: { id: DroneSound; label: string }[] = [
   { id: 'synth', label: 'Synth' },
@@ -30,6 +31,9 @@ export default function DroneTrainer() {
 
   // Silence the drone when leaving the tab.
   useEffect(() => () => droneRef.current?.stop(), []);
+  // Keep the screen on while it plays, so practice isn't cut off by the
+  // screen timeout.
+  useWakeLock(playing);
 
   function toggle() {
     if (droneRef.current) {
