@@ -7,6 +7,7 @@ import { FRET_COUNT, STRINGS, displayNote, noteAt, type Note } from '../theory';
 import { pick, randomInt } from '../random';
 import { jsonCodec, usePersistentState } from '../hooks/usePersistentState';
 import { useQuiz } from '../hooks/useQuiz';
+import './NeckTrainer.css';
 
 const ALL_STRINGS = STRINGS.map((_s, i) => i);
 // Low to high, as guitarists spell the tuning: E A D G B e.

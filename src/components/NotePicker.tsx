@@ -1,4 +1,5 @@
 import { CHROMATIC, displayNote, type Note } from '../theory';
+import './NotePicker.css';
 
 interface NotePickerProps {
   /** Currently selected notes. */

@@ -1,0 +1,53 @@
+.staff-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  background: #fdfcf8;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.staff-line {
+  stroke: #4a443c;
+  stroke-width: 1.2;
+}
+
+.staff-line.ledger {
+  stroke-width: 1.6;
+}
+
+.staff-clef {
+  font-size: 76px;
+  fill: #2b2620;
+  font-family: 'Segoe UI Symbol', 'Noto Music', 'Noto Sans Symbols 2', serif;
+}
+
+.staff-sig,
+.staff-accidental {
+  font-size: 26px;
+  font-weight: 600;
+  fill: #2b2620;
+  text-anchor: middle;
+  font-family: 'Segoe UI Symbol', 'Noto Music', 'Noto Sans Symbols 2', serif;
+}
+
+.note-head {
+  fill: #2b2620;
+}
+
+.note-head.hollow {
+  fill: none;
+  stroke: #2b2620;
+  stroke-width: 2.2;
+}
+
+.note-stem {
+  stroke: #2b2620;
+  stroke-width: 1.8;
+}
+
+.note-flag {
+  fill: none;
+  stroke: #2b2620;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}

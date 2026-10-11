@@ -9,6 +9,7 @@ import {
   type Duration,
   type KeyDef,
 } from '../theory';
+import './SheetStaff.css';
 
 interface SheetStaffProps {
   keyDef: KeyDef;

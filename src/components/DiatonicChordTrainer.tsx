@@ -18,6 +18,7 @@ import {
 import { randomInt, randomNote } from '../random';
 import { oneOf, usePersistentState } from '../hooks/usePersistentState';
 import { useQuiz } from '../hooks/useQuiz';
+import './DiatonicChordTrainer.css';
 
 // Both major and natural-minor keys only ever produce these three qualities.
 const FIND_QUALITIES: Quality[] = ['major', 'minor', 'diminished'];

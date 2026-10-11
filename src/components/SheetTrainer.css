@@ -1,0 +1,11 @@
+.duration-picker {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.duration-btn {
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9rem;
+}

@@ -23,6 +23,7 @@ import {
   usePersistentState,
 } from '../hooks/usePersistentState';
 import { useQuiz } from '../hooks/useQuiz';
+import './ScaleTrainer.css';
 
 type Theme = 'major' | 'minor' | 'all';
 

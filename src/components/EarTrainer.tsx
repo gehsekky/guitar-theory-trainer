@@ -4,6 +4,7 @@ import ChordEarTrainer from './ChordEarTrainer';
 import SegmentedControl from './ui/SegmentedControl';
 import { CHROMATIC, displayNote, type Note } from '../theory';
 import { oneOf, usePersistentState } from '../hooks/usePersistentState';
+import './EarTrainer.css';
 
 // Sub-trainers within Ear Training. Future: 'note' (identify a played
 // single note) slots in here alongside intervals and chords.

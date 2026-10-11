@@ -17,6 +17,7 @@ import { pick, randomNote } from '../random';
 import { oneOf, usePersistentState } from '../hooks/usePersistentState';
 import { usePlayback } from '../hooks/usePlayback';
 import { useQuiz } from '../hooks/useQuiz';
+import './ChordEarTrainer.css';
 
 type Mode = 'easy' | 'hard';
 

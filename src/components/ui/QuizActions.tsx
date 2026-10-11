@@ -1,3 +1,5 @@
+import './QuizActions.css';
+
 interface QuizActionsProps {
   graded: boolean;
   /** Whether an answer is complete enough to submit. */

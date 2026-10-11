@@ -1,0 +1,64 @@
+/* Pinned string names on the left; only the board itself scrolls. */
+.fretboard-area {
+  display: flex;
+  max-width: 100%;
+}
+
+.fretboard-labels {
+  flex-shrink: 0;
+}
+
+.fretboard-scroll {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.fb-wood {
+  fill: var(--wood);
+}
+
+.fb-nut {
+  fill: #e8dcc8;
+}
+
+.fb-fret {
+  stroke: #c9c2b4;
+  stroke-width: 2;
+}
+
+.fb-inlay {
+  fill: #e8dcc8;
+  opacity: 0.55;
+}
+
+.fb-string {
+  stroke: #d8d3c8;
+}
+
+.fb-label {
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--text);
+  text-anchor: middle;
+}
+
+.fb-string.dimmed,
+.fb-label.dimmed {
+  opacity: 0.25;
+}
+
+.fb-fretnum {
+  font-size: 11px;
+  fill: var(--muted);
+  text-anchor: middle;
+}
+
+.fb-marker {
+  fill: var(--accent);
+}
+
+.fb-marker-ring {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+}

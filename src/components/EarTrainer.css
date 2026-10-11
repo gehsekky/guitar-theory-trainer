@@ -1,0 +1,28 @@
+.ear-settings {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ear-settings-label {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.key-select {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.ear-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}

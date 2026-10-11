@@ -1,0 +1,15 @@
+.result {
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 1.05rem;
+}
+
+.result.success {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.result.failure {
+  background: var(--failure-bg);
+  color: var(--failure-text);
+}

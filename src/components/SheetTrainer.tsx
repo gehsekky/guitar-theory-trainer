@@ -23,6 +23,7 @@ import {
 import { pick, randomInt } from '../random';
 import { oneOf, usePersistentState } from '../hooks/usePersistentState';
 import { useQuiz } from '../hooks/useQuiz';
+import './SheetTrainer.css';
 
 type Mode = 'easy' | 'hard';
 

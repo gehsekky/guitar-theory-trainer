@@ -1,0 +1,19 @@
+.secondary-btn {
+  padding: 0.6rem 2rem;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.secondary-btn:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+}
+
+.secondary-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}

@@ -153,3 +153,9 @@ Every quiz trainer is built from the same pieces, so cross-cutting changes
   are public URLs, so keep them stable.
 - `components/ui/`: `SegmentedControl`, `QuizActions` (Submit/Next),
   `ResultBanner`, `PlayButton`
+
+Styles live next to what they style: each component imports its own
+`.css` file, `src/styles/trainer.css` holds the pieces several trainers
+share (the trainer card, choice buttons, chips, toggles, flashcard and
+answer slots), `src/index.css` holds the color tokens, and `App.css` the
+header and tabs. Vite still bundles one stylesheet.

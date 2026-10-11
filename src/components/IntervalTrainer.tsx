@@ -14,6 +14,7 @@ import {
 import { pick, randomNote } from '../random';
 import { usePlayback } from '../hooks/usePlayback';
 import { useQuiz } from '../hooks/useQuiz';
+import './IntervalTrainer.css';
 
 interface Round {
   tonic: Note;

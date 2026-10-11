@@ -1,0 +1,25 @@
+.mode-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.mode-btn {
+  padding: 0.4rem 1.5rem;
+  border: none;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.mode-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+@media (max-width: 480px) {
+  .mode-btn {
+    padding: 0.4rem 0.9rem;
+  }
+}

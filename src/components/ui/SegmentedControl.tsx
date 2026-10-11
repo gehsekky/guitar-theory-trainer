@@ -1,3 +1,5 @@
+import './SegmentedControl.css';
+
 export interface SegmentOption<T extends string> {
   value: T;
   label: string;

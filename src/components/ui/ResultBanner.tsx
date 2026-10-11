@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import './ResultBanner.css';
 
 interface ResultBannerProps {
   correct: boolean;

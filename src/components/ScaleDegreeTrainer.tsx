@@ -15,6 +15,7 @@ import {
 import { pick, randomInt, randomNote } from '../random';
 import { oneOf, usePersistentState } from '../hooks/usePersistentState';
 import { useQuiz } from '../hooks/useQuiz';
+import './ScaleDegreeTrainer.css';
 
 type Mode = 'easy' | 'hard';
 

@@ -1,0 +1,219 @@
+/* Shared trainer styles: the trainer card, choice buttons, chips, toggles,
+   prompts, and the flashcard + answer slots used by several trainers. */
+
+/* ---- Trainer layout ---- */
+
+.trainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+/* On phones the tab pill already names the trainer, so the heading is only
+   kept for screen readers. */
+@media (max-width: 600px) {
+  .trainer > h2 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.instructions {
+  margin: 0;
+  color: var(--muted);
+}
+
+.note-btn {
+  padding: 0.6rem 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.note-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.note-btn.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.note-btn:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.note-btn.correct {
+  background: var(--success-bg);
+  border-color: var(--success-text);
+  color: var(--success-text);
+  opacity: 1;
+}
+
+.note-btn.wrong {
+  background: var(--failure-bg);
+  border-color: var(--failure-text);
+  color: var(--failure-text);
+  opacity: 1;
+}
+
+.chord-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chord-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.tone-slots {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.tone-slot {
+  min-width: 3rem;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  background: var(--bg);
+}
+
+.tone-slot.hidden-tone {
+  border-style: dashed;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.check-label input {
+  accent-color: var(--accent);
+  width: 1rem;
+  height: 1rem;
+}
+
+.flashcard {
+  width: min(100%, 20rem);
+  aspect-ratio: 5 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.12);
+}
+
+.flashcard-note {
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.flashcard-quality {
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+.tone-slot-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.tone-role {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.tone-slot.correct {
+  background: var(--success-bg);
+  border-color: var(--success-text);
+  color: var(--success-text);
+}
+
+.tone-slot.wrong {
+  background: var(--failure-bg);
+  border-color: var(--failure-text);
+  color: var(--failure-text);
+}
+
+.toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.toggle-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.toggle-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.field-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-top: -0.25rem;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.chip-btn {
+  padding: 0.6rem 1rem;
+  min-width: 3.25rem;
+}
+
+.key-label {
+  font-size: 1.25rem;
+  font-weight: 700;
+}

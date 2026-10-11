@@ -12,6 +12,7 @@ import {
 } from '../theory';
 import { useWakeLock } from '../hooks/useWakeLock';
 import { oneOf, usePersistentState } from '../hooks/usePersistentState';
+import './DroneTrainer.css';
 
 const SOUNDS = [
   { value: 'synth', label: 'Synth' },

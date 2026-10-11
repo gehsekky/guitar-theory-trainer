@@ -1,0 +1,13 @@
+.note-picker {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(48px, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 480px;
+}
+
+@media (max-width: 480px) {
+  .note-picker {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
