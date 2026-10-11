@@ -4,6 +4,7 @@
 import { get as getScale } from '@tonaljs/scale';
 import { semitones } from '@tonaljs/interval';
 import { pitchClass, type Note } from './pitch';
+import { spellRoot, type SpelledNote } from './spelling';
 
 interface ScaleDef {
   /** Scale name in Tonal's dictionary. */
@@ -27,7 +28,22 @@ export const SCALE_INTERVALS = Object.fromEntries(
   ]),
 ) as Record<ScaleType, number[]>;
 
+function scaleOn(tonic: SpelledNote, type: ScaleType): SpelledNote[] {
+  return getScale(`${tonic} ${SCALES[type].tonal}`).notes;
+}
+
 /** The notes of a scale, in degree order starting from the root. */
 export function scaleNotes(root: Note, type: ScaleType): Note[] {
-  return getScale(`${root} ${SCALES[type].tonal}`).notes.map(pitchClass);
+  return scaleOn(root, type).map(pitchClass);
+}
+
+/** How to spell a key's tonic: the spelling whose scale needs the fewest
+ * accidentals (A♯ major → B♭ major, D♭ major rather than C♯). */
+export function keyTonic(root: Note, type: ScaleType): SpelledNote {
+  return spellRoot(root, (tonic) => scaleOn(tonic, type));
+}
+
+/** A scale's notes as spelled in its key: F major → F G A B♭ C D E. */
+export function spellScale(root: Note, type: ScaleType): SpelledNote[] {
+  return scaleOn(keyTonic(root, type), type);
 }

@@ -8,7 +8,7 @@ import {
   type Accidental,
   type Duration,
   type KeyDef,
-} from '../sheet';
+} from '../theory';
 
 interface SheetStaffProps {
   keyDef: KeyDef;

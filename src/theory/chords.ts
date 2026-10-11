@@ -1,21 +1,25 @@
 // Chord types, defined once and shared by every trainer. Intervals come from
 // Tonal's chord dictionary; the names are how the app labels them.
 
+import { getChord } from '@tonaljs/chord';
 import { get as getChordType } from '@tonaljs/chord-type';
 import { semitones } from '@tonaljs/interval';
 import { transpose, type Note } from './pitch';
+import { spellRoot, type SpelledNote } from './spelling';
 
 // A chord type (triad or seventh) as semitone offsets from the root.
 export interface ChordType {
   name: string;
   intervals: number[];
+  /** Symbol in Tonal's chord dictionary ("m7b5"), used for spelling. */
+  symbol: string;
 }
 
 /** A chord type by its Tonal symbol ("m7b5"), with our display name. */
 function chordType(symbol: string, name: string): ChordType {
   const { intervals, empty } = getChordType(symbol);
   if (empty) throw new Error(`Unknown chord type: "${symbol}"`);
-  return { name, intervals: intervals.map(semitones) };
+  return { name, intervals: intervals.map(semitones), symbol };
 }
 
 export const CHORD_TYPES = {
@@ -29,6 +33,12 @@ export const CHORD_TYPES = {
   halfDiminished7: chordType('m7b5', 'half-diminished 7th'),
   diminished7: chordType('dim7', 'diminished 7th'),
 } as const satisfies Record<string, ChordType>;
+
+/** A chord's notes as spelled from its root: A♯ major → B♭ D F (not A♯ C𝄪 E♯). */
+export function spellChord(root: Note, chord: ChordType): SpelledNote[] {
+  const build = (tonic: SpelledNote) => getChord(chord.symbol, tonic).notes;
+  return build(spellRoot(root, build));
+}
 
 /** Notes of a chord from its root and interval offsets. */
 export function chordNotes(root: Note, intervals: readonly number[]): Note[] {

@@ -4,9 +4,12 @@ import {
   CHROMATIC,
   NATURAL_NOTES,
   displayNote,
+  formatNote,
+  formatNotes,
   sameNoteOrder,
   sameNoteSet,
   scaleNotes,
+  spellScale,
   type Note,
   type ScaleType,
 } from '../theory';
@@ -112,8 +115,10 @@ export default function ScaleTrainer() {
     setPhase('guessing');
   }
 
-  const scaleName = `${displayNote(round.root)} ${SCALE_LABEL[round.scaleType]}`;
-  const answerDisplay = answer.map(displayNote).join(' – ');
+  // Spelled as in the key (F major has B♭), for the card and the reveal.
+  const spelled = spellScale(round.root, round.scaleType);
+  const scaleName = `${formatNote(spelled[0])} ${SCALE_LABEL[round.scaleType]}`;
+  const answerDisplay = formatNotes(spelled);
   const rightNotesWrongOrder = !correct && sameNoteSet(selected, answer);
 
   return (
@@ -150,20 +155,23 @@ export default function ScaleTrainer() {
       </p>
 
       <div className="flashcard" aria-label={`Flashcard: ${scaleName}`}>
-        <div className="flashcard-note">{displayNote(round.root)}</div>
+        <div className="flashcard-note">{formatNote(spelled[0])}</div>
         <div className="flashcard-quality">{SCALE_LABEL[round.scaleType]}</div>
       </div>
 
       <div className="tone-slots scale-slots">
         {answer.map((tone, i) => {
           const pickedNote = selected[i];
+          const right = graded && tone === pickedNote;
           let cls = 'tone-slot';
-          if (graded) cls += tone === pickedNote ? ' correct' : ' wrong';
+          if (graded) cls += right ? ' correct' : ' wrong';
           else if (!pickedNote) cls += ' hidden-tone';
           return (
             <div key={i} className="tone-slot-wrap">
               <span className={cls}>
-                {pickedNote
+                {right
+                  ? formatNote(spelled[i])
+                  : pickedNote
                   ? displayNote(pickedNote)
                       .split('/')
                       .map((name) => <span key={name}>{name}</span>)

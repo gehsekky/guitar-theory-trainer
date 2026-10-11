@@ -8,3 +8,6 @@ export * from './degrees';
 export * from './chords';
 export * from './diatonic';
 export * from './guitar';
+export * from './spelling';
+export * from './keys';
+export * from './notation';

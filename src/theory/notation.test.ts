@@ -15,8 +15,10 @@ import {
   soundingNote,
   stepOf,
   type KeyDef,
-} from './sheet';
-import { NOTE_INDEX, scaleNotes, type Note } from './theory';
+  NOTE_INDEX,
+  scaleNotes,
+  type Note,
+} from './index';
 
 function key(name: string): KeyDef {
   const k = KEYS.find((k) => k.name === name);

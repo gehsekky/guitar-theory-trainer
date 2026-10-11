@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import NotePicker from './NotePicker';
 import SheetStaff from './SheetStaff';
-import { displayNote, type Note } from '../theory';
-import { pick, randomInt } from '../random';
 import {
   DURATIONS,
   DURATION_LABEL,
   KEYS,
+  formatNote,
   keyAlter,
   letterOfStep,
-  soundingNote,
+  pitchClass,
   stepOf,
+  writtenNote,
   type Accidental,
   type Duration,
   type KeyDef,
-} from '../sheet';
+  type Note,
+  type SpelledNote,
+} from '../theory';
+import { pick, randomInt } from '../random';
 
 type Mode = 'easy' | 'hard';
 
@@ -23,6 +26,8 @@ interface Round {
   step: number;
   accidental: Accidental;
   duration: Duration;
+  /** The note as written, e.g. "Bb" or "E#". */
+  written: SpelledNote;
   answer: Note;
 }
 
@@ -44,12 +49,14 @@ function newRound(mode: Mode): Round {
 
   const duration: Duration = mode === 'hard' ? pick(DURATIONS) : 'quarter';
 
+  const written = writtenNote(step, accidental, key);
   return {
     key,
     step,
     accidental,
     duration,
-    answer: soundingNote(step, accidental, key),
+    written,
+    answer: pitchClass(written),
   };
 }
 
@@ -101,7 +108,11 @@ export default function SheetTrainer() {
 
   const answerText = (
     <>
-      <strong>{displayNote(round.answer)}</strong>
+      <strong>{formatNote(round.written)}</strong>
+      {/* E♯, C♭, B♯, F♭ land on a white key: say which one sounds. */}
+      {round.written.length > 1 && !round.answer.includes('#') && (
+        <> (sounds as {round.answer})</>
+      )}
       {needsDuration && (
         <>
           {' '}

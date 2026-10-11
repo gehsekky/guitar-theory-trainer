@@ -3,8 +3,9 @@ import NotePicker from './NotePicker';
 import {
   DEGREE_INFO,
   DEGREE_NAMES,
-  displayNote,
+  formatNote,
   scaleNotes,
+  spellScale,
   type Note,
   type ScaleType,
 } from '../theory';
@@ -69,13 +70,14 @@ export default function ScaleDegreeTrainer() {
     setPhase('guessing');
   }
 
-  const scaleName = `${displayNote(round.root)} ${round.scaleType}`;
+  const spelled = spellScale(round.root, round.scaleType);
+  const scaleName = `${formatNote(spelled[0])} ${round.scaleType}`;
   const degreeName = DEGREE_NAMES[round.scaleType][round.degree];
   const degreeInfo = DEGREE_INFO[round.scaleType][round.degree];
   const answerLine = (
     <>
       the <strong>{degreeName}</strong> of {scaleName} is{' '}
-      <strong>{displayNote(round.answer)}</strong> (degree {round.degree + 1})
+      <strong>{formatNote(spelled[round.degree])}</strong> (degree {round.degree + 1})
     </>
   );
 

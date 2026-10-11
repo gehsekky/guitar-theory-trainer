@@ -1,16 +1,20 @@
 // Intervals offered by the ear trainer, minor 2nd through octave.
 
 import { semitones } from '@tonaljs/interval';
+import { transpose } from '@tonaljs/note';
+import type { SpelledNote } from './spelling';
 
 export interface Interval {
   semitones: number;
   name: string;
   short: string;
+  /** Interval name in Tonal ("3m", "4A"), used for spelling. */
+  tonal: string;
 }
 
 /** An interval by its Tonal name ("3m", "4A"), with our display names. */
 function interval(tonalName: string, name: string, short: string): Interval {
-  return { semitones: semitones(tonalName), name, short };
+  return { semitones: semitones(tonalName), name, short, tonal: tonalName };
 }
 
 export const INTERVALS: Interval[] = [
@@ -27,3 +31,8 @@ export const INTERVALS: Interval[] = [
   interval('7M', 'Major 7th', 'M7'),
   interval('8P', 'Octave', 'P8'),
 ];
+
+/** The note an interval above a spelled tonic: B♭ + major 3rd → D. */
+export function spellInterval(tonic: SpelledNote, interval: Interval): SpelledNote {
+  return transpose(tonic, interval.tonal);
+}

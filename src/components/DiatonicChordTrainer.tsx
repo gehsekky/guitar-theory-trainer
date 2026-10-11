@@ -4,9 +4,10 @@ import {
   DEGREE_NAMES,
   DIATONIC,
   QUALITY_LABEL,
-  diatonicTriad,
-  displayNote,
+  formatNote,
+  formatNotes,
   scaleNotes,
+  spellDiatonicTriad,
   type Note,
   type Quality,
 } from '../theory';
@@ -58,11 +59,12 @@ export default function DiatonicChordTrainer() {
   const numerals = DIATONIC[keyType].map((c) => c.numeral);
   const chord = DIATONIC[keyType][round.degree];
   const chordRoot = scaleNotes(round.keyRoot, keyType)[round.degree];
-  const triad = diatonicTriad(round.keyRoot, keyType, round.degree);
-  const keyName = `${displayNote(round.keyRoot)} ${keyType}`;
-  const chordName = `${displayNote(chordRoot)} ${QUALITY_LABEL[chord.quality]}`;
+  // Spelled within the key: IV of F major is B♭ major (B♭ – D – F).
+  const spelledTriad = spellDiatonicTriad(round.keyRoot, keyType, round.degree);
+  const keyName = `${formatNote(spellDiatonicTriad(round.keyRoot, keyType, 0)[0])} ${keyType}`;
+  const chordName = `${formatNote(spelledTriad[0])} ${QUALITY_LABEL[chord.quality]}`;
   const degreeName = DEGREE_NAMES[keyType][round.degree];
-  const triadDisplay = triad.map(displayNote).join(' – ');
+  const triadDisplay = formatNotes(spelledTriad);
 
   function resetInputs() {
     setSelectedRoot([]);

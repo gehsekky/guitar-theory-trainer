@@ -6,8 +6,11 @@ import {
   NATURAL_NOTES,
   chordNotes,
   displayNote,
+  formatNote,
+  formatNotes,
   sameNoteOrder,
   sameNoteSet,
+  spellChord,
   type ChordType,
   type Note,
 } from '../theory';
@@ -111,8 +114,10 @@ export default function ChordFlashcardTrainer() {
     setPhase('guessing');
   }
 
-  const chordName = `${displayNote(round.root)} ${round.chord.name}`;
-  const answerDisplay = answer.map(displayNote).join(' – ');
+  // Spelled from the simpler root (B♭ major, not A♯ major).
+  const spelled = spellChord(round.root, round.chord);
+  const chordName = `${formatNote(spelled[0])} ${round.chord.name}`;
+  const answerDisplay = formatNotes(spelled);
   const rightNotesWrongOrder = !correct && sameNoteSet(selected, answer);
 
   return (
@@ -150,20 +155,25 @@ export default function ChordFlashcardTrainer() {
       </p>
 
       <div className="flashcard" aria-label={`Flashcard: ${chordName}`}>
-        <div className="flashcard-note">{displayNote(round.root)}</div>
+        <div className="flashcard-note">{formatNote(spelled[0])}</div>
         <div className="flashcard-quality">{round.chord.name}</div>
       </div>
 
       <div className="tone-slots">
         {answer.map((tone, i) => {
           const pickedNote = selected[i];
+          const right = graded && tone === pickedNote;
           let cls = 'tone-slot';
-          if (graded) cls += tone === pickedNote ? ' correct' : ' wrong';
+          if (graded) cls += right ? ' correct' : ' wrong';
           else if (!pickedNote) cls += ' hidden-tone';
           return (
             <div key={i} className="tone-slot-wrap">
               <span className={cls}>
-                {pickedNote ? displayNote(pickedNote) : '?'}
+                {right
+                  ? formatNote(spelled[i])
+                  : pickedNote
+                    ? displayNote(pickedNote)
+                    : '?'}
               </span>
               <span className="tone-role">{TONE_ROLES[i]}</span>
             </div>

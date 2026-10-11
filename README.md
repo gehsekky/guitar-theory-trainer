@@ -54,8 +54,11 @@ backend — all logic runs client-side and preferences persist in
     a buzz that blooms after each pluck). Switching while playing crossfades
     for easy comparison.
 
-Accidentals are shown with both enharmonic spellings (e.g. A♯/B♭). Mode and
-key choices are remembered between visits.
+Notes in a key, scale, chord, or interval are spelled correctly for that
+context (F major has B♭, not A♯; A♯ major is shown as B♭ major), and a written
+note that lands on a white key says so (E♯, sounds as F). Answers are pitch
+classes, so the note-picker buttons show both spellings (A♯/B♭). Mode and key
+choices are remembered between visits.
 
 ## Getting started
 
@@ -113,6 +116,8 @@ Trainers import music theory only from `src/theory`, never from Tonal
 directly, so the library stays an implementation detail:
 
 - `pitch.ts`: pitch classes (the `Note` type), spelling → pitch class
+- `spelling.ts`: spelled notes (`"Bb"`), display (`B♭`), and choosing a
+  root's spelling by fewest accidentals
 - `scales.ts`: the scales the app teaches; adding one is a single `SCALES`
   entry naming a Tonal scale
 - `chords.ts`: one `CHORD_TYPES` registry shared by every trainer
@@ -120,6 +125,8 @@ directly, so the library stays an implementation detail:
   scale's mode
 - `degrees.ts`: scale-degree names and descriptions (teaching content)
 - `intervals.ts`: the intervals the ear trainer uses
+- `keys.ts`: key signatures, derived from each key's spelled scale
+- `notation.ts`: treble-staff positions, written accidentals, durations
 - `guitar.ts`: tuning and fretboard, kept free of app code
 
 The `@tonaljs/*` packages are pinned to exact versions, with an `overrides`

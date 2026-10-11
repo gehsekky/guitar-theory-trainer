@@ -3,8 +3,9 @@ import { midiOf, playMidiPhrase } from '../audio';
 import {
   EAR_CHORDS_EASY,
   EAR_CHORDS_HARD,
-  chordNotes,
-  displayNote,
+  formatNote,
+  formatNotes,
+  spellChord,
   type ChordType,
   type Note,
 } from '../theory';
@@ -104,10 +105,9 @@ export default function ChordEarTrainer({ fixedKey }: ChordEarTrainerProps) {
     play(r);
   }
 
-  const chordName = `${displayNote(round.root)} ${round.chord.name}`;
-  const notesDisplay = chordNotes(round.root, round.chord.intervals)
-    .map(displayNote)
-    .join(' – ');
+  const spelled = spellChord(round.root, round.chord);
+  const chordName = `${formatNote(spelled[0])} ${round.chord.name}`;
+  const notesDisplay = formatNotes(spelled);
 
   return (
     <div className="ear-game">

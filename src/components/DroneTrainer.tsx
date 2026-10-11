@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import NotePicker from './NotePicker';
 import { startDrone, type Drone, type DroneSound } from '../audio';
-import { CHROMATIC, displayNote, transpose, type Note } from '../theory';
+import {
+  CHROMATIC,
+  INTERVALS,
+  formatNote,
+  keyTonic,
+  spellInterval,
+  type Note,
+} from '../theory';
 import { useWakeLock } from '../useWakeLock';
 
 const SOUNDS: { id: DroneSound; label: string }[] = [
@@ -9,6 +16,8 @@ const SOUNDS: { id: DroneSound; label: string }[] = [
   { id: 'organ', label: 'Organ' },
   { id: 'tanpura', label: 'Tanpura' },
 ];
+
+const PERFECT_FIFTH = INTERVALS.find((i) => i.short === 'P5')!;
 
 const KEY_STORAGE_KEY = 'guitar-theory-trainer.drone-key';
 const SOUND_STORAGE_KEY = 'guitar-theory-trainer.drone-sound';
@@ -66,6 +75,10 @@ export default function DroneTrainer() {
     droneRef.current?.setRoot(next);
   }
 
+  // Spell the drone like a key: B♭ + F rather than A♯ + F.
+  const tonic = keyTonic(key, 'major');
+  const fifth = spellInterval(tonic, PERFECT_FIFTH);
+
   return (
     <section className="trainer">
       <h2>Drone</h2>
@@ -110,9 +123,9 @@ export default function DroneTrainer() {
       </button>
 
       <div className="drone-key">
-        {displayNote(key)} drone{' '}
+        {formatNote(tonic)} drone{' '}
         <span className="drone-notes">
-          ({displayNote(key)} + {displayNote(transpose(key, 7))})
+          ({formatNote(tonic)} + {formatNote(fifth)})
         </span>
       </div>
 

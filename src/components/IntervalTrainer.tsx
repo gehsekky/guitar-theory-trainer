@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { midiOf, playMidiPhrase } from '../audio';
 import {
   INTERVALS,
-  displayNote,
-  transpose,
+  formatNote,
+  keyTonic,
+  spellInterval,
   type Interval,
   type Note,
 } from '../theory';
@@ -75,7 +76,10 @@ export default function IntervalTrainer({ fixedKey }: IntervalTrainerProps) {
     play(r);
   }
 
-  const upperNote = transpose(round.tonic, round.interval.semitones);
+  // Spell the tonic as a key would (B♭, not A♯) and the upper note by the
+  // interval's letter distance (C → F♯ for a tritone written as an aug 4th).
+  const tonic = keyTonic(round.tonic, 'major');
+  const upper = spellInterval(tonic, round.interval);
 
   return (
     <div className="ear-game">
@@ -84,7 +88,7 @@ export default function IntervalTrainer({ fixedKey }: IntervalTrainerProps) {
         interval do you hear?
       </p>
 
-      <div className="key-label">Key: {displayNote(round.tonic)}</div>
+      <div className="key-label">Key: {formatNote(tonic)}</div>
 
       <button
         type="button"
@@ -145,13 +149,13 @@ export default function IntervalTrainer({ fixedKey }: IntervalTrainerProps) {
             <>
               ✓ Correct! That was a{' '}
               <strong>{round.interval.name}</strong> (
-              {displayNote(round.tonic)} → {displayNote(upperNote)}).
+              {formatNote(tonic)} → {formatNote(upper)}).
             </>
           ) : (
             <>
               ✗ Not quite. That was a{' '}
               <strong>{round.interval.name}</strong> (
-              {displayNote(round.tonic)} → {displayNote(upperNote)}).
+              {formatNote(tonic)} → {formatNote(upper)}).
             </>
           )}
         </div>
