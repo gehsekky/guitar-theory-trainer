@@ -1,4 +1,4 @@
-import { useState, type ComponentType } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
 import NeckTrainer from './components/NeckTrainer';
 import ChordFlashcardTrainer from './components/ChordFlashcardTrainer';
 import SheetTrainer from './components/SheetTrainer';
@@ -7,17 +7,19 @@ import EarTrainer from './components/EarTrainer';
 import ScaleDegreeTrainer from './components/ScaleDegreeTrainer';
 import DiatonicChordTrainer from './components/DiatonicChordTrainer';
 import DroneTrainer from './components/DroneTrainer';
+import { useTabRoute } from './hooks/useTabRoute';
 import './App.css';
 
-// One entry per trainer tab, in display order.
+// One entry per trainer tab, in display order. Each id is the trainer's URL
+// (#/scales) and is saved as the last tab used, so keep ids stable.
 const TABS = [
-  { id: 'neck', label: 'Neck Notes', Trainer: NeckTrainer },
-  { id: 'chords', label: 'Chord Flashcards', Trainer: ChordFlashcardTrainer },
-  { id: 'sheet', label: 'Sheet Music', Trainer: SheetTrainer },
-  { id: 'scale', label: 'Scales', Trainer: ScaleTrainer },
-  { id: 'degree', label: 'Scale Degrees', Trainer: ScaleDegreeTrainer },
-  { id: 'diatonic', label: 'Diatonic Chords', Trainer: DiatonicChordTrainer },
-  { id: 'ear', label: 'Ear Training', Trainer: EarTrainer },
+  { id: 'neck-notes', label: 'Neck Notes', Trainer: NeckTrainer },
+  { id: 'chord-flashcards', label: 'Chord Flashcards', Trainer: ChordFlashcardTrainer },
+  { id: 'sheet-music', label: 'Sheet Music', Trainer: SheetTrainer },
+  { id: 'scales', label: 'Scales', Trainer: ScaleTrainer },
+  { id: 'scale-degrees', label: 'Scale Degrees', Trainer: ScaleDegreeTrainer },
+  { id: 'diatonic-chords', label: 'Diatonic Chords', Trainer: DiatonicChordTrainer },
+  { id: 'ear-training', label: 'Ear Training', Trainer: EarTrainer },
   { id: 'drone', label: 'Drone', Trainer: DroneTrainer },
 ] as const satisfies readonly {
   id: string;
@@ -25,13 +27,24 @@ const TABS = [
   Trainer: ComponentType;
 }[];
 
-type Tab = (typeof TABS)[number]['id'];
+const TAB_IDS = TABS.map((t) => t.id);
+
+const APP_TITLE = 'Guitar Theory Trainer';
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>('neck');
+  const [tab, navigate] = useTabRoute(TAB_IDS, 'neck-notes');
   // On phones only the active tab shows; tapping it reveals the rest.
   const [tabsExpanded, setTabsExpanded] = useState(false);
-  const { Trainer } = TABS.find((t) => t.id === tab)!;
+  const { Trainer, label } = TABS.find((t) => t.id === tab)!;
+
+  // Name the trainer in the browser tab and history entries.
+  useEffect(() => {
+    document.title = `${label} · ${APP_TITLE}`;
+  }, [label]);
+
+  // Collapse the phone tab list whenever the trainer changes, including
+  // via Back/Forward.
+  useEffect(() => setTabsExpanded(false), [tab]);
 
   return (
     <div className="app">
@@ -53,12 +66,8 @@ export default function App() {
               aria-selected={tab === t.id}
               className={tab === t.id ? 'tab active' : 'tab'}
               onClick={() => {
-                if (tab === t.id) {
-                  setTabsExpanded((e) => !e);
-                } else {
-                  setTab(t.id);
-                  setTabsExpanded(false);
-                }
+                if (tab === t.id) setTabsExpanded((e) => !e);
+                else navigate(t.id);
               }}
             >
               {t.label}

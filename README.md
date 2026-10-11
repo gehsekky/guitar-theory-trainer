@@ -147,5 +147,9 @@ Every quiz trainer is built from the same pieces, so cross-cutting changes
   stable keys, with typed codecs (`oneOf`, `booleanCodec`, `jsonCodec`) and
   safe fallbacks when storage is unavailable
 - `hooks/usePlayback.ts`: play-button state for ear-training games
+- `hooks/useTabRoute.ts`: the active trainer in the URL hash (`#/scales`),
+  so trainers can be linked to and Back/Forward move between them; a bare
+  URL or app launch reopens the last trainer used. Trainer ids in `App.tsx`
+  are public URLs, so keep them stable.
 - `components/ui/`: `SegmentedControl`, `QuizActions` (Submit/Next),
   `ResultBanner`, `PlayButton`
