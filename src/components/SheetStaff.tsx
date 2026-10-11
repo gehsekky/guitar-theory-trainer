@@ -1,14 +1,22 @@
 import {
-  ACCIDENTAL_GLYPH,
   FLAT_SIG_STEPS,
   SHARP_SIG_STEPS,
   STEP_B4,
   STEP_E4,
   STEP_F5,
+  STEP_G4,
   type Accidental,
   type Duration,
   type KeyDef,
 } from '../theory';
+import {
+  FLAT,
+  G_CLEF_PATH,
+  NATURAL,
+  SHARP,
+  UNITS_PER_STAFF_SPACE,
+  type Glyph,
+} from './notationGlyphs';
 import './SheetStaff.css';
 
 interface SheetStaffProps {
@@ -27,10 +35,27 @@ const STAFF_LEFT = 6;
 const STAFF_RIGHT = 354;
 const WIDTH = 360;
 const HEIGHT = 190;
-const KEY_SIG_X = 64; // first key-signature accidental
-const KEY_SIG_SPACING = 13;
+const CLEF_X = 12;
+const KEY_SIG_X = 58; // left edge of the first key-signature accidental
+const KEY_SIG_GAP = 2;
 const NOTE_X = 260;
+const ACCIDENTAL_GAP = 4.5; // between a note's accidental and its head
+const NOTE_HEAD_LEFT = NOTE_X - 8;
 const STEM_LEN = 42;
+
+// Notation glyphs are in font units (see notationGlyphs.ts).
+const GLYPH_SCALE = LINE_SPACING / UNITS_PER_STAFF_SPACE;
+
+const NOTE_ACCIDENTAL: Record<Exclude<Accidental, 'none'>, Glyph> = {
+  sharp: SHARP,
+  flat: FLAT,
+  natural: NATURAL,
+};
+
+/** A glyph with its left edge at x and its origin on staff position y. */
+function placeGlyph(x: number, y: number): string {
+  return `translate(${x} ${y}) scale(${GLYPH_SCALE} ${-GLYPH_SCALE})`;
+}
 
 function yOf(step: number): number {
   return BOTTOM_LINE_Y - (step - STEP_E4) * HALF_STEP;
@@ -62,7 +87,8 @@ export default function SheetStaff({
   const sigSteps = (
     keyDef.accidentals >= 0 ? SHARP_SIG_STEPS : FLAT_SIG_STEPS
   ).slice(0, sigCount);
-  const sigGlyph = keyDef.accidentals >= 0 ? '♯' : '♭';
+  const sigGlyph = keyDef.accidentals >= 0 ? SHARP : FLAT;
+  const sigStep = sigGlyph.width * GLYPH_SCALE + KEY_SIG_GAP;
 
   // Stem geometry (none for whole notes)
   const stemX = stemUp ? NOTE_X + 6.5 : NOTE_X - 6.5;
@@ -91,21 +117,22 @@ export default function SheetStaff({
           />
         ))}
 
-        {/* Treble clef — curl centered on the G4 line */}
-        <text x={10} y={yOf(32) + 34} className="staff-clef">
-          𝄞
-        </text>
+        {/* Treble clef: the glyph's origin is the G line (SMuFL), scaled
+            from font units to our staff spacing and flipped to y-down. */}
+        <path
+          d={G_CLEF_PATH}
+          transform={placeGlyph(CLEF_X, yOf(STEP_G4))}
+          className="staff-clef"
+        />
 
-        {/* Key signature */}
+        {/* Key signature: each accidental on its line or space */}
         {sigSteps.map((s, i) => (
-          <text
+          <path
             key={i}
-            x={KEY_SIG_X + i * KEY_SIG_SPACING}
-            y={yOf(s) + (sigGlyph === '♭' ? 3 : 6)}
+            d={sigGlyph.path}
+            transform={placeGlyph(KEY_SIG_X + i * sigStep, yOf(s))}
             className="staff-sig"
-          >
-            {sigGlyph}
-          </text>
+          />
         ))}
 
         {/* Ledger lines */}
@@ -120,15 +147,18 @@ export default function SheetStaff({
           />
         ))}
 
-        {/* Note accidental */}
+        {/* Note accidental, just left of the note head */}
         {accidental !== 'none' && (
-          <text
-            x={NOTE_X - 22}
-            y={noteY + (accidental === 'flat' ? 3 : 6)}
+          <path
+            d={NOTE_ACCIDENTAL[accidental].path}
+            transform={placeGlyph(
+              NOTE_HEAD_LEFT -
+                ACCIDENTAL_GAP -
+                NOTE_ACCIDENTAL[accidental].width * GLYPH_SCALE,
+              noteY,
+            )}
             className="staff-accidental"
-          >
-            {ACCIDENTAL_GLYPH[accidental]}
-          </text>
+          />
         )}
 
         {/* Note head */}

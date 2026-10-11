@@ -11,6 +11,7 @@ import type { SpelledNote } from './spelling';
 // A "step" is a diatonic position: octave * 7 + letter index (C=0 .. B=6).
 // Treble staff lines are E4 (step 30) up to F5 (step 38).
 export const STEP_E4 = 30;
+export const STEP_G4 = 32; // second line — the treble clef curls around it
 export const STEP_F5 = 38;
 export const STEP_B4 = 34; // middle line — stem direction flips here
 
@@ -34,12 +35,6 @@ export const FLAT_SIG_STEPS = [34, 37, 33, 36, 32, 35, 31]; // B4 E5 A4 D5 G4 C5
 // ---- Accidentals & sounding pitch ----------------------------------------
 
 export type Accidental = 'none' | 'sharp' | 'flat' | 'natural';
-
-export const ACCIDENTAL_GLYPH: Record<Exclude<Accidental, 'none'>, string> = {
-  sharp: '♯',
-  flat: '♭',
-  natural: '♮',
-};
 
 const ACCIDENTAL_ALTER: Record<Exclude<Accidental, 'none'>, Alter> = {
   sharp: 1,

@@ -134,7 +134,12 @@ entry for `@tonaljs/pitch-interval`, because Tonal's 2026-09-28 release
 was published with missing `main`/`types` files.
 
 UI and rendering (fretboard, staff, synthesized audio) use no external
-libraries.
+libraries. The treble clef and the sharps, flats, and naturals are SVG
+outlines from [Bravura](https://github.com/steinbergmedia/bravura),
+Steinberg's SMuFL reference music font (SIL Open Font License 1.1, see
+`licenses/Bravura-OFL.txt`). SMuFL defines where each glyph sits on the
+staff, so the notation looks identical on every device rather than
+depending on installed fonts.
 
 ### Shared trainer building blocks
 

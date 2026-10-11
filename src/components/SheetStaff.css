@@ -16,18 +16,12 @@
 }
 
 .staff-clef {
-  font-size: 76px;
   fill: #2b2620;
-  font-family: 'Segoe UI Symbol', 'Noto Music', 'Noto Sans Symbols 2', serif;
 }
 
 .staff-sig,
 .staff-accidental {
-  font-size: 26px;
-  font-weight: 600;
   fill: #2b2620;
-  text-anchor: middle;
-  font-family: 'Segoe UI Symbol', 'Noto Music', 'Noto Sans Symbols 2', serif;
 }
 
 .note-head {
