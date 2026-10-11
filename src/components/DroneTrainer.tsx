@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import NotePicker from './NotePicker';
+import SegmentedControl from './ui/SegmentedControl';
 import { startDrone, type Drone, type DroneSound } from '../audio';
 import {
   CHROMATIC,
@@ -9,32 +10,24 @@ import {
   spellInterval,
   type Note,
 } from '../theory';
-import { useWakeLock } from '../useWakeLock';
+import { useWakeLock } from '../hooks/useWakeLock';
+import { oneOf, usePersistentState } from '../hooks/usePersistentState';
 
-const SOUNDS: { id: DroneSound; label: string }[] = [
-  { id: 'synth', label: 'Synth' },
-  { id: 'organ', label: 'Organ' },
-  { id: 'tanpura', label: 'Tanpura' },
-];
+const SOUNDS = [
+  { value: 'synth', label: 'Synth' },
+  { value: 'organ', label: 'Organ' },
+  { value: 'tanpura', label: 'Tanpura' },
+] as const satisfies readonly { value: DroneSound; label: string }[];
 
 const PERFECT_FIFTH = INTERVALS.find((i) => i.short === 'P5')!;
 
-const KEY_STORAGE_KEY = 'guitar-theory-trainer.drone-key';
-const SOUND_STORAGE_KEY = 'guitar-theory-trainer.drone-sound';
-
-function loadKey(): Note {
-  const stored = localStorage.getItem(KEY_STORAGE_KEY);
-  return CHROMATIC.find((n) => n === stored) ?? 'E';
-}
-
-function loadSound(): DroneSound {
-  const stored = localStorage.getItem(SOUND_STORAGE_KEY);
-  return SOUNDS.find((s) => s.id === stored)?.id ?? 'synth';
-}
-
 export default function DroneTrainer() {
-  const [key, setKey] = useState<Note>(loadKey);
-  const [sound, setSound] = useState<DroneSound>(loadSound);
+  const [key, setKey] = usePersistentState<Note>('drone-key', 'E', oneOf(CHROMATIC));
+  const [sound, setSound] = usePersistentState<DroneSound>(
+    'drone-sound',
+    'synth',
+    oneOf(SOUNDS.map((s) => s.value)),
+  );
   const [playing, setPlaying] = useState(false);
   const droneRef = useRef<Drone | null>(null);
 
@@ -56,9 +49,7 @@ export default function DroneTrainer() {
   }
 
   function changeSound(next: DroneSound) {
-    if (next === sound) return;
     setSound(next);
-    localStorage.setItem(SOUND_STORAGE_KEY, next);
     // Crossfade straight to the new sound for easy A/B comparison.
     if (droneRef.current) {
       droneRef.current.stop();
@@ -71,7 +62,6 @@ export default function DroneTrainer() {
     const next = selected[0];
     if (!next) return;
     setKey(next);
-    localStorage.setItem(KEY_STORAGE_KEY, next);
     droneRef.current?.setRoot(next);
   }
 
@@ -83,20 +73,12 @@ export default function DroneTrainer() {
     <section className="trainer">
       <h2>Drone</h2>
 
-      <div className="mode-toggle" role="radiogroup" aria-label="Drone sound">
-        {SOUNDS.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            role="radio"
-            aria-checked={sound === s.id}
-            className={sound === s.id ? 'mode-btn active' : 'mode-btn'}
-            onClick={() => changeSound(s.id)}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        label="Drone sound"
+        options={SOUNDS}
+        value={sound}
+        onChange={changeSound}
+      />
 
       <p className="instructions">
         Play a root + fifth drone to anchor the key while you practice. Pick a

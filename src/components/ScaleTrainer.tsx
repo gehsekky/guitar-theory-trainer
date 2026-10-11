@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import NotePicker from './NotePicker';
+import QuizActions from './ui/QuizActions';
+import ResultBanner from './ui/ResultBanner';
+import SegmentedControl from './ui/SegmentedControl';
 import {
   CHROMATIC,
   NATURAL_NOTES,
@@ -14,13 +17,19 @@ import {
   type ScaleType,
 } from '../theory';
 import { pick } from '../random';
+import {
+  booleanCodec,
+  oneOf,
+  usePersistentState,
+} from '../hooks/usePersistentState';
+import { useQuiz } from '../hooks/useQuiz';
 
 type Theme = 'major' | 'minor' | 'all';
 
-const THEMES: { id: Theme; label: string; scales: ScaleType[] }[] = [
-  { id: 'major', label: 'Major', scales: ['major'] },
-  { id: 'minor', label: 'Minor', scales: ['minor'] },
-  { id: 'all', label: 'All', scales: ['major', 'minor'] },
+const THEMES: { value: Theme; label: string; scales: ScaleType[] }[] = [
+  { value: 'major', label: 'Major', scales: ['major'] },
+  { value: 'minor', label: 'Minor', scales: ['minor'] },
+  { value: 'all', label: 'All', scales: ['major', 'minor'] },
 ];
 
 const SCALE_LABEL: Record<ScaleType, string> = {
@@ -37,7 +46,7 @@ interface Round {
 }
 
 function scalesFor(theme: Theme): ScaleType[] {
-  return THEMES.find((t) => t.id === theme)!.scales;
+  return THEMES.find((t) => t.value === theme)!.scales;
 }
 
 /** A new card, avoiding an immediate repeat of the previous one. */
@@ -56,63 +65,36 @@ function newRound(theme: Theme, accidentals: boolean, prev?: Round): Round {
   return round;
 }
 
-type Phase = 'guessing' | 'graded';
-
-const THEME_STORAGE_KEY = 'guitar-theory-trainer.scale-theme';
-const ACCIDENTALS_STORAGE_KEY = 'guitar-theory-trainer.scale-accidentals';
-
-function loadTheme(): Theme {
-  const stored = localStorage.getItem(THEME_STORAGE_KEY);
-  return THEMES.some((t) => t.id === stored) ? (stored as Theme) : 'major';
-}
-
-function loadAccidentals(): boolean {
-  return localStorage.getItem(ACCIDENTALS_STORAGE_KEY) !== 'false';
-}
+const THEME_VALUES = THEMES.map((t) => t.value);
 
 export default function ScaleTrainer() {
-  const [theme, setTheme] = useState<Theme>(loadTheme);
-  const [accidentals, setAccidentals] = useState(loadAccidentals);
-  const [round, setRound] = useState<Round>(() =>
-    newRound(loadTheme(), loadAccidentals()),
+  const [theme, setTheme] = usePersistentState<Theme>(
+    'scale-theme',
+    'major',
+    oneOf(THEME_VALUES),
+  );
+  const [accidentals, setAccidentals] = usePersistentState(
+    'scale-accidentals',
+    true,
+    booleanCodec,
   );
   const [selected, setSelected] = useState<Note[]>([]);
-  const [phase, setPhase] = useState<Phase>('guessing');
-  const [correct, setCorrect] = useState(false);
+  const { round, graded, correct, grade, next } = useQuiz(
+    (prev?: Round) => newRound(theme, accidentals, prev),
+    () => setSelected([]),
+  );
 
   const answer = scaleNotes(round.root, round.scaleType);
   const needed = answer.length;
-  const graded = phase === 'graded';
 
-  function reset(nextTheme: Theme, nextAccidentals: boolean) {
-    setRound(newRound(nextTheme, nextAccidentals));
-    setSelected([]);
-    setPhase('guessing');
+  function changeTheme(nextTheme: Theme) {
+    setTheme(nextTheme);
+    next(newRound(nextTheme, accidentals));
   }
 
-  function changeTheme(next: Theme) {
-    if (next === theme) return;
-    setTheme(next);
-    localStorage.setItem(THEME_STORAGE_KEY, next);
-    reset(next, accidentals);
-  }
-
-  function changeAccidentals(next: boolean) {
-    setAccidentals(next);
-    localStorage.setItem(ACCIDENTALS_STORAGE_KEY, String(next));
-    reset(theme, next);
-  }
-
-  function submit() {
-    if (selected.length !== needed) return;
-    setCorrect(sameNoteOrder(selected, answer));
-    setPhase('graded');
-  }
-
-  function next() {
-    setRound(newRound(theme, accidentals, round));
-    setSelected([]);
-    setPhase('guessing');
+  function changeAccidentals(nextAccidentals: boolean) {
+    setAccidentals(nextAccidentals);
+    next(newRound(theme, nextAccidentals));
   }
 
   // Spelled as in the key (F major has B♭), for the card and the reveal.
@@ -126,20 +108,12 @@ export default function ScaleTrainer() {
       <h2>Scale Trainer</h2>
 
       <div className="toggle-row">
-        <div className="mode-toggle" role="radiogroup" aria-label="Scale theme">
-          {THEMES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="radio"
-              aria-checked={theme === t.id}
-              className={theme === t.id ? 'mode-btn active' : 'mode-btn'}
-              onClick={() => changeTheme(t.id)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          label="Scale theme"
+          options={THEMES}
+          value={theme}
+          onChange={changeTheme}
+        />
         <label className="check-label">
           <input
             type="checkbox"
@@ -192,26 +166,15 @@ export default function ScaleTrainer() {
         graded={graded}
       />
 
-      {phase === 'guessing' ? (
-        <button
-          type="button"
-          className="primary-btn"
-          onClick={submit}
-          disabled={selected.length !== needed}
-        >
-          Submit
-        </button>
-      ) : (
-        <button type="button" className="primary-btn" onClick={next}>
-          Next
-        </button>
-      )}
+      <QuizActions
+        graded={graded}
+        canSubmit={selected.length === needed}
+        onSubmit={() => grade(sameNoteOrder(selected, answer))}
+        onNext={() => next()}
+      />
 
       {graded && (
-        <div
-          className={correct ? 'result success' : 'result failure'}
-          role="status"
-        >
+        <ResultBanner correct={correct}>
           {correct ? (
             <>✓ Correct! {scaleName} is <strong>{answerDisplay}</strong>.</>
           ) : (
@@ -223,7 +186,7 @@ export default function ScaleTrainer() {
               .
             </>
           )}
-        </div>
+        </ResultBanner>
       )}
     </section>
   );

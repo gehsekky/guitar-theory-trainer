@@ -1,5 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { midiOf, playMidiPhrase } from '../audio';
+import PlayButton from './ui/PlayButton';
+import SegmentedControl from './ui/SegmentedControl';
+import QuizActions from './ui/QuizActions';
+import ResultBanner from './ui/ResultBanner';
 import {
   EAR_CHORDS_EASY,
   EAR_CHORDS_HARD,
@@ -10,8 +14,16 @@ import {
   type Note,
 } from '../theory';
 import { pick, randomNote } from '../random';
+import { oneOf, usePersistentState } from '../hooks/usePersistentState';
+import { usePlayback } from '../hooks/usePlayback';
+import { useQuiz } from '../hooks/useQuiz';
 
 type Mode = 'easy' | 'hard';
+
+const MODES = [
+  { value: 'easy', label: 'Easy' },
+  { value: 'hard', label: 'Hard' },
+] as const;
 
 interface Round {
   root: Note;
@@ -22,12 +34,6 @@ interface Round {
 interface ChordEarTrainerProps {
   /** When set, every chord is built on this root; null = random root. */
   fixedKey: Note | null;
-}
-
-const MODE_STORAGE_KEY = 'guitar-theory-trainer.ear-chord-mode';
-
-function loadMode(): Mode {
-  return localStorage.getItem(MODE_STORAGE_KEY) === 'hard' ? 'hard' : 'easy';
 }
 
 function chordsFor(mode: Mode): ChordType[] {
@@ -42,21 +48,18 @@ function newRound(mode: Mode, fixedKey: Note | null): Round {
   };
 }
 
-type Phase = 'guessing' | 'graded';
-
 export default function ChordEarTrainer({ fixedKey }: ChordEarTrainerProps) {
-  const [mode, setMode] = useState<Mode>(loadMode);
-  const [round, setRound] = useState<Round>(() =>
-    newRound(loadMode(), fixedKey),
+  const [mode, setMode] = usePersistentState<Mode>(
+    'ear-chord-mode',
+    'easy',
+    oneOf(['easy', 'hard']),
   );
   const [selected, setSelected] = useState<ChordType | null>(null);
-  const [phase, setPhase] = useState<Phase>('guessing');
-  const [correct, setCorrect] = useState(false);
-  const [hasPlayed, setHasPlayed] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const playTimer = useRef<number | undefined>(undefined);
-
-  useEffect(() => () => window.clearTimeout(playTimer.current), []);
+  const { round, graded, correct, grade, next } = useQuiz(
+    () => newRound(mode, fixedKey),
+    () => setSelected(null),
+  );
+  const playback = usePlayback();
 
   const choices = chordsFor(mode);
 
@@ -71,38 +74,21 @@ export default function ChordEarTrainer({ fixedKey }: ChordEarTrainerProps) {
       ],
       0.1,
     );
-    setHasPlayed(true);
-    setIsPlaying(true);
-    window.clearTimeout(playTimer.current);
-    playTimer.current = window.setTimeout(
-      () => setIsPlaying(false),
-      seconds * 1000,
-    );
+    playback.started(seconds);
   }
 
-  function changeMode(next: Mode) {
-    if (next === mode) return;
-    setMode(next);
-    localStorage.setItem(MODE_STORAGE_KEY, next);
-    setRound(newRound(next, fixedKey));
-    setSelected(null);
-    setPhase('guessing');
-    setHasPlayed(false);
-    setIsPlaying(false);
+  function changeMode(nextMode: Mode) {
+    setMode(nextMode);
+    next(newRound(nextMode, fixedKey));
+    playback.reset();
   }
 
   function submit() {
-    if (!selected) return;
-    setCorrect(selected.name === round.chord.name);
-    setPhase('graded');
+    grade(selected?.name === round.chord.name);
   }
 
-  function next() {
-    const r = newRound(mode, fixedKey);
-    setRound(r);
-    setSelected(null);
-    setPhase('guessing');
-    play(r);
+  function nextRound() {
+    play(next());
   }
 
   const spelled = spellChord(round.root, round.chord);
@@ -111,20 +97,12 @@ export default function ChordEarTrainer({ fixedKey }: ChordEarTrainerProps) {
 
   return (
     <div className="ear-game">
-      <div className="mode-toggle" role="radiogroup" aria-label="Difficulty">
-        {(['easy', 'hard'] as const).map((m) => (
-          <button
-            key={m}
-            type="button"
-            role="radio"
-            aria-checked={mode === m}
-            className={mode === m ? 'mode-btn active' : 'mode-btn'}
-            onClick={() => changeMode(m)}
-          >
-            {m === 'easy' ? 'Easy' : 'Hard'}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        label="Difficulty"
+        options={MODES}
+        value={mode}
+        onChange={changeMode}
+      />
 
       <p className="instructions">
         {mode === 'easy'
@@ -132,20 +110,17 @@ export default function ChordEarTrainer({ fixedKey }: ChordEarTrainerProps) {
           : 'A chord plays note by note, then all together. Which quality is it?'}
       </p>
 
-      <button
-        type="button"
-        className="secondary-btn"
-        onClick={() => play()}
-        disabled={isPlaying}
-      >
-        {isPlaying ? '♪ Playing…' : hasPlayed ? '▶ Play Again' : '▶ Play'}
-      </button>
+      <PlayButton
+        hasPlayed={playback.hasPlayed}
+        isPlaying={playback.isPlaying}
+        onPlay={() => play()}
+      />
 
       <div className="chip-row" role="group" aria-label="Chord quality">
         {choices.map((c) => {
           const isSelected = selected?.name === c.name;
-          const isCorrect = phase === 'graded' && c.name === round.chord.name;
-          const isWrong = phase === 'graded' && isSelected && !isCorrect;
+          const isCorrect = graded && c.name === round.chord.name;
+          const isWrong = graded && isSelected && !isCorrect;
           let cls = 'note-btn chip-btn quality-chip';
           if (isSelected) cls += ' selected';
           if (isCorrect) cls += ' correct';
@@ -156,7 +131,7 @@ export default function ChordEarTrainer({ fixedKey }: ChordEarTrainerProps) {
               type="button"
               className={cls}
               aria-pressed={isSelected}
-              disabled={phase === 'graded'}
+              disabled={graded}
               onClick={() => setSelected(isSelected ? null : c)}
             >
               {c.name}
@@ -165,26 +140,15 @@ export default function ChordEarTrainer({ fixedKey }: ChordEarTrainerProps) {
         })}
       </div>
 
-      {phase === 'guessing' ? (
-        <button
-          type="button"
-          className="primary-btn"
-          onClick={submit}
-          disabled={!selected || !hasPlayed}
-        >
-          Submit
-        </button>
-      ) : (
-        <button type="button" className="primary-btn" onClick={next}>
-          Next
-        </button>
-      )}
+      <QuizActions
+        graded={graded}
+        canSubmit={selected !== null && playback.hasPlayed}
+        onSubmit={submit}
+        onNext={nextRound}
+      />
 
-      {phase === 'graded' && (
-        <div
-          className={correct ? 'result success' : 'result failure'}
-          role="status"
-        >
+      {graded && (
+        <ResultBanner correct={correct}>
           {correct ? (
             <>
               ✓ Correct! That was <strong>{chordName}</strong> ({notesDisplay}).
@@ -195,7 +159,7 @@ export default function ChordEarTrainer({ fixedKey }: ChordEarTrainerProps) {
               {notesDisplay}).
             </>
           )}
-        </div>
+        </ResultBanner>
       )}
     </div>
   );

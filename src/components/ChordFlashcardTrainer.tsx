@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import NotePicker from './NotePicker';
+import QuizActions from './ui/QuizActions';
+import ResultBanner from './ui/ResultBanner';
+import SegmentedControl from './ui/SegmentedControl';
 import {
   CHORD_TYPES,
   CHROMATIC,
@@ -15,16 +18,22 @@ import {
   type Note,
 } from '../theory';
 import { pick } from '../random';
+import {
+  booleanCodec,
+  oneOf,
+  usePersistentState,
+} from '../hooks/usePersistentState';
+import { useQuiz } from '../hooks/useQuiz';
 
 type Theme = 'major' | 'minor' | 'maj7' | 'all';
 
 const { major, minor, major7 } = CHORD_TYPES;
 
-const THEMES: { id: Theme; label: string; chords: ChordType[] }[] = [
-  { id: 'major', label: 'Major', chords: [major] },
-  { id: 'minor', label: 'Minor', chords: [minor] },
-  { id: 'maj7', label: 'Major 7th', chords: [major7] },
-  { id: 'all', label: 'All', chords: [major, minor, major7] },
+const THEMES: { value: Theme; label: string; chords: ChordType[] }[] = [
+  { value: 'major', label: 'Major', chords: [major] },
+  { value: 'minor', label: 'Minor', chords: [minor] },
+  { value: 'maj7', label: 'Major 7th', chords: [major7] },
+  { value: 'all', label: 'All', chords: [major, minor, major7] },
 ];
 
 // Root-position role of each chord tone, by slot.
@@ -36,7 +45,7 @@ interface Round {
 }
 
 function chordsFor(theme: Theme): ChordType[] {
-  return THEMES.find((t) => t.id === theme)!.chords;
+  return THEMES.find((t) => t.value === theme)!.chords;
 }
 
 /** A new card, avoiding an immediate repeat of the previous one. */
@@ -55,63 +64,36 @@ function newRound(theme: Theme, accidentals: boolean, prev?: Round): Round {
   return round;
 }
 
-type Phase = 'guessing' | 'graded';
-
-const THEME_STORAGE_KEY = 'guitar-theory-trainer.chord-flashcard-theme';
-const ACCIDENTALS_STORAGE_KEY = 'guitar-theory-trainer.chord-flashcard-accidentals';
-
-function loadTheme(): Theme {
-  const stored = localStorage.getItem(THEME_STORAGE_KEY);
-  return THEMES.some((t) => t.id === stored) ? (stored as Theme) : 'major';
-}
-
-function loadAccidentals(): boolean {
-  return localStorage.getItem(ACCIDENTALS_STORAGE_KEY) !== 'false';
-}
+const THEME_VALUES = THEMES.map((t) => t.value);
 
 export default function ChordFlashcardTrainer() {
-  const [theme, setTheme] = useState<Theme>(loadTheme);
-  const [accidentals, setAccidentals] = useState(loadAccidentals);
-  const [round, setRound] = useState<Round>(() =>
-    newRound(loadTheme(), loadAccidentals()),
+  const [theme, setTheme] = usePersistentState<Theme>(
+    'chord-flashcard-theme',
+    'major',
+    oneOf(THEME_VALUES),
+  );
+  const [accidentals, setAccidentals] = usePersistentState(
+    'chord-flashcard-accidentals',
+    true,
+    booleanCodec,
   );
   const [selected, setSelected] = useState<Note[]>([]);
-  const [phase, setPhase] = useState<Phase>('guessing');
-  const [correct, setCorrect] = useState(false);
+  const { round, graded, correct, grade, next } = useQuiz(
+    (prev?: Round) => newRound(theme, accidentals, prev),
+    () => setSelected([]),
+  );
 
   const answer = chordNotes(round.root, round.chord.intervals);
   const needed = answer.length;
-  const graded = phase === 'graded';
 
-  function reset(nextTheme: Theme, nextAccidentals: boolean) {
-    setRound(newRound(nextTheme, nextAccidentals));
-    setSelected([]);
-    setPhase('guessing');
+  function changeTheme(nextTheme: Theme) {
+    setTheme(nextTheme);
+    next(newRound(nextTheme, accidentals));
   }
 
-  function changeTheme(next: Theme) {
-    if (next === theme) return;
-    setTheme(next);
-    localStorage.setItem(THEME_STORAGE_KEY, next);
-    reset(next, accidentals);
-  }
-
-  function changeAccidentals(next: boolean) {
-    setAccidentals(next);
-    localStorage.setItem(ACCIDENTALS_STORAGE_KEY, String(next));
-    reset(theme, next);
-  }
-
-  function submit() {
-    if (selected.length !== needed) return;
-    setCorrect(sameNoteOrder(selected, answer));
-    setPhase('graded');
-  }
-
-  function next() {
-    setRound(newRound(theme, accidentals, round));
-    setSelected([]);
-    setPhase('guessing');
+  function changeAccidentals(nextAccidentals: boolean) {
+    setAccidentals(nextAccidentals);
+    next(newRound(theme, nextAccidentals));
   }
 
   // Spelled from the simpler root (B♭ major, not A♯ major).
@@ -125,20 +107,12 @@ export default function ChordFlashcardTrainer() {
       <h2>Chord Flashcards</h2>
 
       <div className="toggle-row">
-        <div className="mode-toggle" role="radiogroup" aria-label="Chord theme">
-          {THEMES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="radio"
-              aria-checked={theme === t.id}
-              className={theme === t.id ? 'mode-btn active' : 'mode-btn'}
-              onClick={() => changeTheme(t.id)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          label="Chord theme"
+          options={THEMES}
+          value={theme}
+          onChange={changeTheme}
+        />
         <label className="check-label">
           <input
             type="checkbox"
@@ -190,26 +164,15 @@ export default function ChordFlashcardTrainer() {
         graded={graded}
       />
 
-      {phase === 'guessing' ? (
-        <button
-          type="button"
-          className="primary-btn"
-          onClick={submit}
-          disabled={selected.length !== needed}
-        >
-          Submit
-        </button>
-      ) : (
-        <button type="button" className="primary-btn" onClick={next}>
-          Next
-        </button>
-      )}
+      <QuizActions
+        graded={graded}
+        canSubmit={selected.length === needed}
+        onSubmit={() => grade(sameNoteOrder(selected, answer))}
+        onNext={() => next()}
+      />
 
       {graded && (
-        <div
-          className={correct ? 'result success' : 'result failure'}
-          role="status"
-        >
+        <ResultBanner correct={correct}>
           {correct ? (
             <>✓ Correct! {chordName} is <strong>{answerDisplay}</strong>.</>
           ) : (
@@ -221,7 +184,7 @@ export default function ChordFlashcardTrainer() {
               .
             </>
           )}
-        </div>
+        </ResultBanner>
       )}
     </section>
   );

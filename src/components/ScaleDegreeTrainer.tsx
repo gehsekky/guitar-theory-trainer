@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import NotePicker from './NotePicker';
+import QuizActions from './ui/QuizActions';
+import ResultBanner from './ui/ResultBanner';
+import SegmentedControl from './ui/SegmentedControl';
 import {
   DEGREE_INFO,
   DEGREE_NAMES,
@@ -10,8 +13,15 @@ import {
   type ScaleType,
 } from '../theory';
 import { pick, randomInt, randomNote } from '../random';
+import { oneOf, usePersistentState } from '../hooks/usePersistentState';
+import { useQuiz } from '../hooks/useQuiz';
 
 type Mode = 'easy' | 'hard';
+
+const MODES = [
+  { value: 'easy', label: 'Easy' },
+  { value: 'hard', label: 'Hard' },
+] as const;
 
 interface Round {
   root: Note;
@@ -33,41 +43,21 @@ function newRound(mode: Mode): Round {
   };
 }
 
-type Phase = 'guessing' | 'graded';
-
-const MODE_STORAGE_KEY = 'guitar-theory-trainer.scale-degree-mode';
-
-function loadMode(): Mode {
-  const stored = localStorage.getItem(MODE_STORAGE_KEY);
-  return stored === 'hard' ? 'hard' : 'easy';
-}
-
 export default function ScaleDegreeTrainer() {
-  const [mode, setMode] = useState<Mode>(loadMode);
-  const [round, setRound] = useState<Round>(() => newRound(loadMode()));
+  const [mode, setMode] = usePersistentState<Mode>(
+    'scale-degree-mode',
+    'easy',
+    oneOf(['easy', 'hard']),
+  );
   const [selected, setSelected] = useState<Note[]>([]);
-  const [phase, setPhase] = useState<Phase>('guessing');
-  const [correct, setCorrect] = useState(false);
+  const { round, graded, correct, grade, next } = useQuiz(
+    () => newRound(mode),
+    () => setSelected([]),
+  );
 
-  function changeMode(next: Mode) {
-    if (next === mode) return;
-    setMode(next);
-    localStorage.setItem(MODE_STORAGE_KEY, next);
-    setRound(newRound(next));
-    setSelected([]);
-    setPhase('guessing');
-  }
-
-  function submit() {
-    if (selected.length !== 1) return;
-    setCorrect(selected[0] === round.answer);
-    setPhase('graded');
-  }
-
-  function next() {
-    setRound(newRound(mode));
-    setSelected([]);
-    setPhase('guessing');
+  function changeMode(nextMode: Mode) {
+    setMode(nextMode);
+    next(newRound(nextMode));
   }
 
   const spelled = spellScale(round.root, round.scaleType);
@@ -85,20 +75,12 @@ export default function ScaleDegreeTrainer() {
     <section className="trainer">
       <h2>Scale-Degree Trainer</h2>
 
-      <div className="mode-toggle" role="radiogroup" aria-label="Difficulty">
-        {(['easy', 'hard'] as const).map((m) => (
-          <button
-            key={m}
-            type="button"
-            role="radio"
-            aria-checked={mode === m}
-            className={mode === m ? 'mode-btn active' : 'mode-btn'}
-            onClick={() => changeMode(m)}
-          >
-            {m === 'easy' ? 'Easy' : 'Hard'}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        label="Difficulty"
+        options={MODES}
+        value={mode}
+        onChange={changeMode}
+      />
 
       <p className="instructions">
         {mode === 'easy'
@@ -118,36 +100,25 @@ export default function ScaleDegreeTrainer() {
         selected={selected}
         max={1}
         onChange={setSelected}
-        disabled={phase === 'graded'}
+        disabled={graded}
         correctNotes={[round.answer]}
-        graded={phase === 'graded'}
+        graded={graded}
       />
 
-      {phase === 'guessing' ? (
-        <button
-          type="button"
-          className="primary-btn"
-          onClick={submit}
-          disabled={selected.length !== 1}
-        >
-          Submit
-        </button>
-      ) : (
-        <button type="button" className="primary-btn" onClick={next}>
-          Next
-        </button>
-      )}
+      <QuizActions
+        graded={graded}
+        canSubmit={selected.length === 1}
+        onSubmit={() => grade(selected[0] === round.answer)}
+        onNext={() => next()}
+      />
 
-      {phase === 'graded' && (
-        <div
-          className={correct ? 'result success' : 'result failure'}
-          role="status"
-        >
+      {graded && (
+        <ResultBanner correct={correct}>
           {correct ? <>✓ Correct — {answerLine}.</> : <>✗ Not quite — {answerLine}.</>}
-        </div>
+        </ResultBanner>
       )}
 
-      {phase === 'graded' && (
+      {graded && (
         <div className="degree-info">
           <div className="degree-info-title">
             {degreeName} <span className="degree-num">(degree {round.degree + 1})</span>

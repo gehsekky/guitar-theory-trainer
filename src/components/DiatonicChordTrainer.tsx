@@ -1,23 +1,39 @@
 import { useState } from 'react';
 import NotePicker from './NotePicker';
+import QuizActions from './ui/QuizActions';
+import ResultBanner from './ui/ResultBanner';
+import SegmentedControl from './ui/SegmentedControl';
 import {
   DEGREE_NAMES,
   DIATONIC,
   QUALITY_LABEL,
   formatNote,
   formatNotes,
+  keyTonic,
   scaleNotes,
   spellDiatonicTriad,
   type Note,
   type Quality,
 } from '../theory';
 import { randomInt, randomNote } from '../random';
+import { oneOf, usePersistentState } from '../hooks/usePersistentState';
+import { useQuiz } from '../hooks/useQuiz';
 
 // Both major and natural-minor keys only ever produce these three qualities.
 const FIND_QUALITIES: Quality[] = ['major', 'minor', 'diminished'];
 
 type Mode = 'find' | 'name';
 type KeyType = 'major' | 'minor';
+
+const MODES = [
+  { value: 'find', label: 'Find Chord' },
+  { value: 'name', label: 'Name Numeral' },
+] as const;
+
+const KEY_TYPES = [
+  { value: 'major', label: 'Major' },
+  { value: 'minor', label: 'Minor' },
+] as const;
 
 interface Round {
   keyRoot: Note;
@@ -28,27 +44,17 @@ function newRound(): Round {
   return { keyRoot: randomNote(), degree: randomInt(7) };
 }
 
-type Phase = 'guessing' | 'graded';
-
-const MODE_STORAGE_KEY = 'guitar-theory-trainer.diatonic-mode';
-const KEYTYPE_STORAGE_KEY = 'guitar-theory-trainer.diatonic-keytype';
-
-function loadMode(): Mode {
-  return localStorage.getItem(MODE_STORAGE_KEY) === 'name' ? 'name' : 'find';
-}
-
-function loadKeyType(): KeyType {
-  return localStorage.getItem(KEYTYPE_STORAGE_KEY) === 'minor'
-    ? 'minor'
-    : 'major';
-}
-
 export default function DiatonicChordTrainer() {
-  const [mode, setMode] = useState<Mode>(loadMode);
-  const [keyType, setKeyType] = useState<KeyType>(loadKeyType);
-  const [round, setRound] = useState<Round>(() => newRound());
-  const [phase, setPhase] = useState<Phase>('guessing');
-  const [correct, setCorrect] = useState(false);
+  const [mode, setMode] = usePersistentState<Mode>(
+    'diatonic-mode',
+    'find',
+    oneOf(['find', 'name']),
+  );
+  const [keyType, setKeyType] = usePersistentState<KeyType>(
+    'diatonic-keytype',
+    'major',
+    oneOf(['major', 'minor']),
+  );
 
   // Find-mode inputs
   const [selectedRoot, setSelectedRoot] = useState<Note[]>([]);
@@ -56,38 +62,30 @@ export default function DiatonicChordTrainer() {
   // Name-mode input
   const [selectedNumeral, setSelectedNumeral] = useState<string | null>(null);
 
+  const { round, graded, correct, grade, next } = useQuiz(newRound, () => {
+    setSelectedRoot([]);
+    setSelectedQuality(null);
+    setSelectedNumeral(null);
+  });
+
   const numerals = DIATONIC[keyType].map((c) => c.numeral);
   const chord = DIATONIC[keyType][round.degree];
   const chordRoot = scaleNotes(round.keyRoot, keyType)[round.degree];
   // Spelled within the key: IV of F major is B♭ major (B♭ – D – F).
   const spelledTriad = spellDiatonicTriad(round.keyRoot, keyType, round.degree);
-  const keyName = `${formatNote(spellDiatonicTriad(round.keyRoot, keyType, 0)[0])} ${keyType}`;
+  const keyName = `${formatNote(keyTonic(round.keyRoot, keyType))} ${keyType}`;
   const chordName = `${formatNote(spelledTriad[0])} ${QUALITY_LABEL[chord.quality]}`;
   const degreeName = DEGREE_NAMES[keyType][round.degree];
   const triadDisplay = formatNotes(spelledTriad);
 
-  function resetInputs() {
-    setSelectedRoot([]);
-    setSelectedQuality(null);
-    setSelectedNumeral(null);
+  function changeMode(nextMode: Mode) {
+    setMode(nextMode);
+    next();
   }
 
-  function changeMode(next: Mode) {
-    if (next === mode) return;
-    setMode(next);
-    localStorage.setItem(MODE_STORAGE_KEY, next);
-    setRound(newRound());
-    resetInputs();
-    setPhase('guessing');
-  }
-
-  function changeKeyType(next: KeyType) {
-    if (next === keyType) return;
-    setKeyType(next);
-    localStorage.setItem(KEYTYPE_STORAGE_KEY, next);
-    setRound(newRound());
-    resetInputs();
-    setPhase('guessing');
+  function changeKeyType(nextKeyType: KeyType) {
+    setKeyType(nextKeyType);
+    next();
   }
 
   const ready =
@@ -96,19 +94,11 @@ export default function DiatonicChordTrainer() {
       : selectedNumeral !== null;
 
   function submit() {
-    if (!ready) return;
-    const ok =
+    grade(
       mode === 'find'
         ? selectedRoot[0] === chordRoot && selectedQuality === chord.quality
-        : selectedNumeral === chord.numeral;
-    setCorrect(ok);
-    setPhase('graded');
-  }
-
-  function next() {
-    setRound(newRound());
-    resetInputs();
-    setPhase('guessing');
+        : selectedNumeral === chord.numeral,
+    );
   }
 
   const reveal =
@@ -131,38 +121,22 @@ export default function DiatonicChordTrainer() {
       <div className="toggle-row">
         <div className="toggle-group">
           <span className="toggle-label">Mode</span>
-          <div className="mode-toggle" role="radiogroup" aria-label="Mode">
-            {(['find', 'name'] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                role="radio"
-                aria-checked={mode === m}
-                className={mode === m ? 'mode-btn active' : 'mode-btn'}
-                onClick={() => changeMode(m)}
-              >
-                {m === 'find' ? 'Find Chord' : 'Name Numeral'}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            label="Mode"
+            options={MODES}
+            value={mode}
+            onChange={changeMode}
+          />
         </div>
 
         <div className="toggle-group">
           <span className="toggle-label">Key</span>
-          <div className="mode-toggle" role="radiogroup" aria-label="Key type">
-            {(['major', 'minor'] as const).map((k) => (
-              <button
-                key={k}
-                type="button"
-                role="radio"
-                aria-checked={keyType === k}
-                className={keyType === k ? 'mode-btn active' : 'mode-btn'}
-                onClick={() => changeKeyType(k)}
-              >
-                {k === 'major' ? 'Major' : 'Minor'}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            label="Key type"
+            options={KEY_TYPES}
+            value={keyType}
+            onChange={changeKeyType}
+          />
         </div>
       </div>
 
@@ -184,17 +158,17 @@ export default function DiatonicChordTrainer() {
             selected={selectedRoot}
             max={1}
             onChange={setSelectedRoot}
-            disabled={phase === 'graded'}
+            disabled={graded}
             correctNotes={[chordRoot]}
-            graded={phase === 'graded'}
+            graded={graded}
           />
 
           <div className="field-label">Quality</div>
           <div className="chip-row" role="group" aria-label="Chord quality">
             {FIND_QUALITIES.map((q) => {
               const isSelected = selectedQuality === q;
-              const isCorrect = phase === 'graded' && q === chord.quality;
-              const isWrong = phase === 'graded' && isSelected && !isCorrect;
+              const isCorrect = graded && q === chord.quality;
+              const isWrong = graded && isSelected && !isCorrect;
               let cls = 'note-btn chip-btn';
               if (isSelected) cls += ' selected';
               if (isCorrect) cls += ' correct';
@@ -205,7 +179,7 @@ export default function DiatonicChordTrainer() {
                   type="button"
                   className={cls}
                   aria-pressed={isSelected}
-                  disabled={phase === 'graded'}
+                  disabled={graded}
                   onClick={() => setSelectedQuality(isSelected ? null : q)}
                 >
                   {QUALITY_LABEL[q]}
@@ -225,8 +199,8 @@ export default function DiatonicChordTrainer() {
           <div className="chip-row" role="group" aria-label="Roman numeral">
             {numerals.map((num) => {
               const isSelected = selectedNumeral === num;
-              const isCorrect = phase === 'graded' && num === chord.numeral;
-              const isWrong = phase === 'graded' && isSelected && !isCorrect;
+              const isCorrect = graded && num === chord.numeral;
+              const isWrong = graded && isSelected && !isCorrect;
               let cls = 'note-btn chip-btn numeral-btn';
               if (isSelected) cls += ' selected';
               if (isCorrect) cls += ' correct';
@@ -237,7 +211,7 @@ export default function DiatonicChordTrainer() {
                   type="button"
                   className={cls}
                   aria-pressed={isSelected}
-                  disabled={phase === 'graded'}
+                  disabled={graded}
                   onClick={() => setSelectedNumeral(isSelected ? null : num)}
                 >
                   {num}
@@ -248,28 +222,17 @@ export default function DiatonicChordTrainer() {
         </>
       )}
 
-      {phase === 'guessing' ? (
-        <button
-          type="button"
-          className="primary-btn"
-          onClick={submit}
-          disabled={!ready}
-        >
-          Submit
-        </button>
-      ) : (
-        <button type="button" className="primary-btn" onClick={next}>
-          Next
-        </button>
-      )}
+      <QuizActions
+        graded={graded}
+        canSubmit={ready}
+        onSubmit={submit}
+        onNext={() => next()}
+      />
 
-      {phase === 'graded' && (
-        <div
-          className={correct ? 'result success' : 'result failure'}
-          role="status"
-        >
+      {graded && (
+        <ResultBanner correct={correct}>
           {correct ? <>✓ Correct — {reveal}.</> : <>✗ Not quite — {reveal}.</>}
-        </div>
+        </ResultBanner>
       )}
     </section>
   );

@@ -135,3 +135,17 @@ was published with missing `main`/`types` files.
 
 UI and rendering (fretboard, staff, synthesized audio) use no external
 libraries.
+
+### Shared trainer building blocks
+
+Every quiz trainer is built from the same pieces, so cross-cutting changes
+(layout, scoring, shortcuts) happen in one place:
+
+- `hooks/useQuiz.ts`: the round loop (current round, graded, correct,
+  `grade()`, `next()`)
+- `hooks/usePersistentState.ts`: settings saved in `localStorage` under
+  stable keys, with typed codecs (`oneOf`, `booleanCodec`, `jsonCodec`) and
+  safe fallbacks when storage is unavailable
+- `hooks/usePlayback.ts`: play-button state for ear-training games
+- `components/ui/`: `SegmentedControl`, `QuizActions` (Submit/Next),
+  `ResultBanner`, `PlayButton`

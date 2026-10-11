@@ -1,5 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { midiOf, playMidiPhrase } from '../audio';
+import PlayButton from './ui/PlayButton';
+import QuizActions from './ui/QuizActions';
+import ResultBanner from './ui/ResultBanner';
 import {
   INTERVALS,
   formatNote,
@@ -9,6 +12,8 @@ import {
   type Note,
 } from '../theory';
 import { pick, randomNote } from '../random';
+import { usePlayback } from '../hooks/usePlayback';
+import { useQuiz } from '../hooks/useQuiz';
 
 interface Round {
   tonic: Note;
@@ -24,23 +29,18 @@ function newRound(fixedKey: Note | null): Round {
   };
 }
 
-type Phase = 'guessing' | 'graded';
-
 interface IntervalTrainerProps {
   /** When set, every round uses this tonic; null = random key per round. */
   fixedKey: Note | null;
 }
 
 export default function IntervalTrainer({ fixedKey }: IntervalTrainerProps) {
-  const [round, setRound] = useState<Round>(() => newRound(fixedKey));
   const [selected, setSelected] = useState<Interval | null>(null);
-  const [phase, setPhase] = useState<Phase>('guessing');
-  const [correct, setCorrect] = useState(false);
-  const [hasPlayed, setHasPlayed] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const playTimer = useRef<number | undefined>(undefined);
-
-  useEffect(() => () => window.clearTimeout(playTimer.current), []);
+  const { round, graded, correct, grade, next } = useQuiz(
+    () => newRound(fixedKey),
+    () => setSelected(null),
+  );
+  const playback = usePlayback();
 
   function play(r: Round = round) {
     const root = midiOf(r.tonic, r.octave);
@@ -52,28 +52,16 @@ export default function IntervalTrainer({ fixedKey }: IntervalTrainerProps) {
       { midis: [upper], duration: 1.2 },
       { midis: [root, upper], duration: 1.8 },
     ]);
-    setHasPlayed(true);
-    setIsPlaying(true);
-    window.clearTimeout(playTimer.current);
-    playTimer.current = window.setTimeout(
-      () => setIsPlaying(false),
-      seconds * 1000,
-    );
+    playback.started(seconds);
   }
 
   function submit() {
-    if (!selected) return;
-    setCorrect(selected.semitones === round.interval.semitones);
-    setPhase('graded');
+    grade(selected?.semitones === round.interval.semitones);
   }
 
-  function next() {
-    const r = newRound(fixedKey);
-    setRound(r);
-    setSelected(null);
-    setPhase('guessing');
+  function nextRound() {
     // The Next click is a user gesture, so we can start audio right away.
-    play(r);
+    play(next());
   }
 
   // Spell the tonic as a key would (B♭, not A♯) and the upper note by the
@@ -90,21 +78,18 @@ export default function IntervalTrainer({ fixedKey }: IntervalTrainerProps) {
 
       <div className="key-label">Key: {formatNote(tonic)}</div>
 
-      <button
-        type="button"
-        className="secondary-btn"
-        onClick={() => play()}
-        disabled={isPlaying}
-      >
-        {isPlaying ? '♪ Playing…' : hasPlayed ? '▶ Play Again' : '▶ Play'}
-      </button>
+      <PlayButton
+        hasPlayed={playback.hasPlayed}
+        isPlaying={playback.isPlaying}
+        onPlay={() => play()}
+      />
 
       <div className="interval-picker" role="group" aria-label="Interval choices">
         {INTERVALS.map((iv) => {
           const isSelected = selected?.semitones === iv.semitones;
           const isCorrect =
-            phase === 'graded' && iv.semitones === round.interval.semitones;
-          const isWrongPick = phase === 'graded' && isSelected && !isCorrect;
+            graded && iv.semitones === round.interval.semitones;
+          const isWrongPick = graded && isSelected && !isCorrect;
           let cls = 'note-btn interval-btn';
           if (isSelected) cls += ' selected';
           if (isCorrect) cls += ' correct';
@@ -115,7 +100,7 @@ export default function IntervalTrainer({ fixedKey }: IntervalTrainerProps) {
               type="button"
               className={cls}
               aria-pressed={isSelected}
-              disabled={phase === 'graded'}
+              disabled={graded}
               onClick={() => setSelected(isSelected ? null : iv)}
             >
               <span className="interval-name">{iv.name}</span>
@@ -125,26 +110,15 @@ export default function IntervalTrainer({ fixedKey }: IntervalTrainerProps) {
         })}
       </div>
 
-      {phase === 'guessing' ? (
-        <button
-          type="button"
-          className="primary-btn"
-          onClick={submit}
-          disabled={!selected || !hasPlayed}
-        >
-          Submit
-        </button>
-      ) : (
-        <button type="button" className="primary-btn" onClick={next}>
-          Next
-        </button>
-      )}
+      <QuizActions
+        graded={graded}
+        canSubmit={selected !== null && playback.hasPlayed}
+        onSubmit={submit}
+        onNext={nextRound}
+      />
 
-      {phase === 'graded' && (
-        <div
-          className={correct ? 'result success' : 'result failure'}
-          role="status"
-        >
+      {graded && (
+        <ResultBanner correct={correct}>
           {correct ? (
             <>
               ✓ Correct! That was a{' '}
@@ -158,7 +132,7 @@ export default function IntervalTrainer({ fixedKey }: IntervalTrainerProps) {
               {formatNote(tonic)} → {formatNote(upper)}).
             </>
           )}
-        </div>
+        </ResultBanner>
       )}
     </div>
   );

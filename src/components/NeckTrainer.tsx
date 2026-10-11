@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import Fretboard, { type FretboardMarker } from './Fretboard';
 import NotePicker from './NotePicker';
+import QuizActions from './ui/QuizActions';
+import ResultBanner from './ui/ResultBanner';
 import { FRET_COUNT, STRINGS, displayNote, noteAt, type Note } from '../theory';
 import { pick, randomInt } from '../random';
+import { jsonCodec, usePersistentState } from '../hooks/usePersistentState';
+import { useQuiz } from '../hooks/useQuiz';
 
 const ALL_STRINGS = STRINGS.map((_s, i) => i);
 // Low to high, as guitarists spell the tuning: E A D G B e.
@@ -28,52 +32,31 @@ function newRound(strings: number[], prev?: Round): Round {
   return { marker: { stringIndex, fret }, answer: noteAt(stringIndex, fret) };
 }
 
-type Phase = 'guessing' | 'graded';
-
-const STRINGS_STORAGE_KEY = 'guitar-theory-trainer.neck-strings';
-
-function loadStrings(): number[] {
-  try {
-    const stored: unknown = JSON.parse(
-      localStorage.getItem(STRINGS_STORAGE_KEY) ?? 'null',
-    );
-    if (Array.isArray(stored)) {
-      const valid = ALL_STRINGS.filter((i) => stored.includes(i));
-      if (valid.length > 0) return valid;
-    }
-  } catch {
-    // Fall through to the default.
-  }
-  return ALL_STRINGS;
-}
+// Saved as a JSON list of string indices; keep only valid ones, and never
+// end up with no strings at all.
+const stringsCodec = jsonCodec((stored) => {
+  if (!Array.isArray(stored)) return undefined;
+  const valid = ALL_STRINGS.filter((i) => stored.includes(i));
+  return valid.length > 0 ? valid : undefined;
+});
 
 export default function NeckTrainer() {
-  const [strings, setStrings] = useState<number[]>(loadStrings);
-  const [round, setRound] = useState<Round>(() => newRound(loadStrings()));
+  const [strings, setStrings] = usePersistentState(
+    'neck-strings',
+    ALL_STRINGS,
+    stringsCodec,
+  );
   const [selected, setSelected] = useState<Note[]>([]);
-  const [phase, setPhase] = useState<Phase>('guessing');
-  const [correct, setCorrect] = useState(false);
-
-  function submit() {
-    if (selected.length !== 1) return;
-    setCorrect(selected[0] === round.answer);
-    setPhase('graded');
-  }
-
-  function next() {
-    setRound(newRound(strings, round));
-    setSelected([]);
-    setPhase('guessing');
-  }
+  const { round, graded, correct, grade, next } = useQuiz(
+    (prev?: Round) => newRound(strings, prev),
+    () => setSelected([]),
+  );
 
   function changeStrings(nextStrings: number[]) {
     // Keep at least one string eligible.
     if (nextStrings.length === 0) return;
     setStrings(nextStrings);
-    localStorage.setItem(STRINGS_STORAGE_KEY, JSON.stringify(nextStrings));
-    setRound(newRound(nextStrings));
-    setSelected([]);
-    setPhase('guessing');
+    next(newRound(nextStrings));
   }
 
   function toggleString(i: number) {
@@ -127,37 +110,26 @@ export default function NeckTrainer() {
         selected={selected}
         max={1}
         onChange={setSelected}
-        disabled={phase === 'graded'}
+        disabled={graded}
         correctNotes={[round.answer]}
-        graded={phase === 'graded'}
+        graded={graded}
       />
 
-      {phase === 'guessing' ? (
-        <button
-          type="button"
-          className="primary-btn"
-          onClick={submit}
-          disabled={selected.length !== 1}
-        >
-          Submit
-        </button>
-      ) : (
-        <button type="button" className="primary-btn" onClick={next}>
-          Next
-        </button>
-      )}
+      <QuizActions
+        graded={graded}
+        canSubmit={selected.length === 1}
+        onSubmit={() => grade(selected[0] === round.answer)}
+        onNext={() => next()}
+      />
 
-      {phase === 'graded' && (
-        <div
-          className={correct ? 'result success' : 'result failure'}
-          role="status"
-        >
+      {graded && (
+        <ResultBanner correct={correct}>
           {correct ? (
             <>✓ Correct! That note is <strong>{displayNote(round.answer)}</strong>.</>
           ) : (
             <>✗ Not quite. The correct answer is <strong>{displayNote(round.answer)}</strong>.</>
           )}
-        </div>
+        </ResultBanner>
       )}
     </section>
   );

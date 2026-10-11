@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import NotePicker from './NotePicker';
 import SheetStaff from './SheetStaff';
+import QuizActions from './ui/QuizActions';
+import ResultBanner from './ui/ResultBanner';
+import SegmentedControl from './ui/SegmentedControl';
 import {
   DURATIONS,
   DURATION_LABEL,
@@ -18,8 +21,15 @@ import {
   type SpelledNote,
 } from '../theory';
 import { pick, randomInt } from '../random';
+import { oneOf, usePersistentState } from '../hooks/usePersistentState';
+import { useQuiz } from '../hooks/useQuiz';
 
 type Mode = 'easy' | 'hard';
+
+const MODES = [
+  { value: 'easy', label: 'Easy' },
+  { value: 'hard', label: 'Hard' },
+] as const;
 
 interface Round {
   key: KeyDef;
@@ -60,50 +70,35 @@ function newRound(mode: Mode): Round {
   };
 }
 
-type Phase = 'guessing' | 'graded';
-
-const MODE_STORAGE_KEY = 'guitar-theory-trainer.sheet-mode';
-
-function loadMode(): Mode {
-  const stored = localStorage.getItem(MODE_STORAGE_KEY);
-  return stored === 'hard' ? 'hard' : 'easy';
-}
-
 export default function SheetTrainer() {
-  const [mode, setMode] = useState<Mode>(loadMode);
-  const [round, setRound] = useState<Round>(() => newRound(loadMode()));
+  const [mode, setMode] = usePersistentState<Mode>(
+    'sheet-mode',
+    'easy',
+    oneOf(['easy', 'hard']),
+  );
   const [selected, setSelected] = useState<Note[]>([]);
   const [selectedDuration, setSelectedDuration] = useState<Duration | null>(null);
-  const [phase, setPhase] = useState<Phase>('guessing');
-  const [correct, setCorrect] = useState(false);
+  const { round, graded, correct, grade, next } = useQuiz(
+    () => newRound(mode),
+    () => {
+      setSelected([]);
+      setSelectedDuration(null);
+    },
+  );
 
   const needsDuration = mode === 'hard';
   const ready =
     selected.length === 1 && (!needsDuration || selectedDuration !== null);
 
-  function changeMode(next: Mode) {
-    if (next === mode) return;
-    setMode(next);
-    localStorage.setItem(MODE_STORAGE_KEY, next);
-    setRound(newRound(next));
-    setSelected([]);
-    setSelectedDuration(null);
-    setPhase('guessing');
+  function changeMode(nextMode: Mode) {
+    setMode(nextMode);
+    next(newRound(nextMode));
   }
 
   function submit() {
-    if (!ready) return;
     const noteRight = selected[0] === round.answer;
     const durationRight = !needsDuration || selectedDuration === round.duration;
-    setCorrect(noteRight && durationRight);
-    setPhase('graded');
-  }
-
-  function next() {
-    setRound(newRound(mode));
-    setSelected([]);
-    setSelectedDuration(null);
-    setPhase('guessing');
+    grade(noteRight && durationRight);
   }
 
   const answerText = (
@@ -127,20 +122,12 @@ export default function SheetTrainer() {
     <section className="trainer">
       <h2>Sheet Music Trainer</h2>
 
-      <div className="mode-toggle" role="radiogroup" aria-label="Difficulty">
-        {(['easy', 'hard'] as const).map((m) => (
-          <button
-            key={m}
-            type="button"
-            role="radio"
-            aria-checked={mode === m}
-            className={mode === m ? 'mode-btn active' : 'mode-btn'}
-            onClick={() => changeMode(m)}
-          >
-            {m === 'easy' ? 'Easy' : 'Hard'}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        label="Difficulty"
+        options={MODES}
+        value={mode}
+        onChange={changeMode}
+      />
 
       <p className="instructions">
         {mode === 'easy'
@@ -161,9 +148,9 @@ export default function SheetTrainer() {
         selected={selected}
         max={1}
         onChange={setSelected}
-        disabled={phase === 'graded'}
+        disabled={graded}
         correctNotes={[round.answer]}
-        graded={phase === 'graded'}
+        graded={graded}
       />
 
       {needsDuration && (
@@ -172,8 +159,8 @@ export default function SheetTrainer() {
             const isSelected = selectedDuration === d;
             let cls = 'note-btn duration-btn';
             if (isSelected) cls += ' selected';
-            if (phase === 'graded' && d === round.duration) cls += ' correct';
-            if (phase === 'graded' && isSelected && d !== round.duration)
+            if (graded && d === round.duration) cls += ' correct';
+            if (graded && isSelected && d !== round.duration)
               cls += ' wrong';
             return (
               <button
@@ -181,7 +168,7 @@ export default function SheetTrainer() {
                 type="button"
                 className={cls}
                 aria-pressed={isSelected}
-                disabled={phase === 'graded'}
+                disabled={graded}
                 onClick={() => setSelectedDuration(isSelected ? null : d)}
               >
                 {DURATION_LABEL[d]}
@@ -191,32 +178,21 @@ export default function SheetTrainer() {
         </div>
       )}
 
-      {phase === 'guessing' ? (
-        <button
-          type="button"
-          className="primary-btn"
-          onClick={submit}
-          disabled={!ready}
-        >
-          Submit
-        </button>
-      ) : (
-        <button type="button" className="primary-btn" onClick={next}>
-          Next
-        </button>
-      )}
+      <QuizActions
+        graded={graded}
+        canSubmit={ready}
+        onSubmit={submit}
+        onNext={() => next()}
+      />
 
-      {phase === 'graded' && (
-        <div
-          className={correct ? 'result success' : 'result failure'}
-          role="status"
-        >
+      {graded && (
+        <ResultBanner correct={correct}>
           {correct ? (
             <>✓ Correct! That's {answerText}.</>
           ) : (
             <>✗ Not quite. The answer is {answerText}.</>
           )}
-        </div>
+        </ResultBanner>
       )}
     </section>
   );
