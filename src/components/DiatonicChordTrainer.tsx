@@ -3,6 +3,7 @@ import NotePicker from './NotePicker';
 import QuizActions from './ui/QuizActions';
 import ResultBanner from './ui/ResultBanner';
 import SegmentedControl from './ui/SegmentedControl';
+import DroneKeyNotice from './ui/DroneKeyNotice';
 import {
   DEGREE_NAMES,
   DIATONIC,
@@ -18,6 +19,7 @@ import {
 import { randomInt, randomNote } from '../random';
 import { oneOf, usePersistentState } from '../hooks/usePersistentState';
 import { useQuiz } from '../hooks/useQuiz';
+import { useDrone } from '../drone/DroneContext';
 import './DiatonicChordTrainer.css';
 
 // Both major and natural-minor keys only ever produce these three qualities.
@@ -41,11 +43,13 @@ interface Round {
   degree: number; // 0-6
 }
 
-function newRound(): Round {
-  return { keyRoot: randomNote(), degree: randomInt(7) };
+/** A new question; while the drone sounds, always in its key (`lockedKey`). */
+function newRound(lockedKey: Note | null): Round {
+  return { keyRoot: lockedKey ?? randomNote(), degree: randomInt(7) };
 }
 
 export default function DiatonicChordTrainer() {
+  const { lockedKey } = useDrone();
   const [mode, setMode] = usePersistentState<Mode>(
     'diatonic-mode',
     'find',
@@ -63,7 +67,7 @@ export default function DiatonicChordTrainer() {
   // Name-mode input
   const [selectedNumeral, setSelectedNumeral] = useState<string | null>(null);
 
-  const { round, graded, correct, grade, next } = useQuiz(newRound, () => {
+  const { round, graded, correct, grade, next } = useQuiz(() => newRound(lockedKey), () => {
     setSelectedRoot([]);
     setSelectedQuality(null);
     setSelectedNumeral(null);
@@ -140,6 +144,8 @@ export default function DiatonicChordTrainer() {
           />
         </div>
       </div>
+
+      {lockedKey && <DroneKeyNotice lockedKey={lockedKey} />}
 
       <p className="instructions">
         {mode === 'find'

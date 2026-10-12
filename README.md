@@ -47,6 +47,12 @@ backend — all logic runs client-side and preferences persist in
   while you practice. Tap the big button to play or pause; pick the key from
   the note grid, and it changes live. The screen stays on while it plays
   (where the browser supports the Screen Wake Lock API).
+  - *Practicing with the drone:* it keeps playing as you switch trainers, and
+    a header control shows its key and stops it from anywhere. While it
+    sounds, Scales, Scale Degrees, Diatonic Chords, and Ear Training use its
+    key (each says so), and ear-training prompts briefly dip it. Sheet Music
+    and Chord Flashcards change key every round, so the drone pauses there
+    and resumes when you leave; Neck Notes leaves it playing.
   - *Sounds:* Synth (detuned sawtooths, slowly breathing filter), Organ
     (steady drawbar-style sine partials), or Tanpura (modeled on measurements
     of a real tanpura: Pa, Sa, Sa, low Sa plucked across an 8 s cycle with a
@@ -152,6 +158,10 @@ Every quiz trainer is built from the same pieces, so cross-cutting changes
   stable keys, with typed codecs (`oneOf`, `booleanCodec`, `jsonCodec`) and
   safe fallbacks when storage is unavailable
 - `hooks/usePlayback.ts`: play-button state for ear-training games
+- `drone/`: the one app-wide drone (`DroneProvider`, `useDrone()`), and each
+  trainer's `drone` policy in `App.tsx` (`lock` to its key, `pause` it, or
+  `free`); locked trainers remount when the drone's key changes so the
+  current round follows
 - `hooks/useTabRoute.ts`: the active trainer in the URL hash (`#/scales`),
   so trainers can be linked to and Back/Forward move between them; a bare
   URL or app launch reopens the last trainer used. Trainer ids in `App.tsx`

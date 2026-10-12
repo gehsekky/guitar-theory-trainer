@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useDrone } from '../drone/DroneContext';
 
 /**
  * Play-button state for ear-training games: whether the prompt has been
@@ -9,11 +10,14 @@ export function usePlayback() {
   const [hasPlayed, setHasPlayed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const timer = useRef<number | undefined>(undefined);
+  const drone = useDrone();
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
-  /** Record that audio started and will play for `seconds`. */
+  /** Record that audio started and will play for `seconds`. A running drone
+   * dips underneath so the prompt stays clear. */
   function started(seconds: number) {
+    drone.duck(seconds);
     setHasPlayed(true);
     setIsPlaying(true);
     window.clearTimeout(timer.current);

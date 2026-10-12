@@ -1,17 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
 import NotePicker from './NotePicker';
 import SegmentedControl from './ui/SegmentedControl';
-import { startDrone, type Drone, type DroneSound } from '../audio';
-import {
-  CHROMATIC,
-  INTERVALS,
-  formatNote,
-  keyTonic,
-  spellInterval,
-  type Note,
-} from '../theory';
-import { useWakeLock } from '../hooks/useWakeLock';
-import { oneOf, usePersistentState } from '../hooks/usePersistentState';
+import type { DroneSound } from '../audio';
+import { INTERVALS, formatNote, keyTonic, spellInterval, type Note } from '../theory';
+import { useDrone } from '../drone/DroneContext';
 import './DroneTrainer.css';
 
 const SOUNDS = [
@@ -23,51 +14,18 @@ const SOUNDS = [
 const PERFECT_FIFTH = INTERVALS.find((i) => i.short === 'P5')!;
 
 export default function DroneTrainer() {
-  const [key, setKey] = usePersistentState<Note>('drone-key', 'E', oneOf(CHROMATIC));
-  const [sound, setSound] = usePersistentState<DroneSound>(
-    'drone-sound',
-    'synth',
-    oneOf(SOUNDS.map((s) => s.value)),
-  );
-  const [playing, setPlaying] = useState(false);
-  const droneRef = useRef<Drone | null>(null);
-
-  // Silence the drone when leaving the tab.
-  useEffect(() => () => droneRef.current?.stop(), []);
-  // Keep the screen on while it plays, so practice isn't cut off by the
-  // screen timeout.
-  useWakeLock(playing);
-
-  function toggle() {
-    if (droneRef.current) {
-      droneRef.current.stop();
-      droneRef.current = null;
-      setPlaying(false);
-    } else {
-      droneRef.current = startDrone(key, sound);
-      setPlaying(true);
-    }
-  }
-
-  function changeSound(next: DroneSound) {
-    setSound(next);
-    // Crossfade straight to the new sound for easy A/B comparison.
-    if (droneRef.current) {
-      droneRef.current.stop();
-      droneRef.current = startDrone(key, next);
-    }
-  }
+  // The drone itself lives app-wide (DroneProvider), so it keeps playing
+  // when you switch to another trainer.
+  const drone = useDrone();
 
   function changeKey(selected: Note[]) {
     // Tapping the current key would deselect it; keep a key chosen.
     const next = selected[0];
-    if (!next) return;
-    setKey(next);
-    droneRef.current?.setRoot(next);
+    if (next) drone.setKey(next);
   }
 
   // Spell the drone like a key: B♭ + F rather than A♯ + F.
-  const tonic = keyTonic(key, 'major');
+  const tonic = keyTonic(drone.key, 'major');
   const fifth = spellInterval(tonic, PERFECT_FIFTH);
 
   return (
@@ -77,24 +35,25 @@ export default function DroneTrainer() {
       <SegmentedControl
         label="Drone sound"
         options={SOUNDS}
-        value={sound}
-        onChange={changeSound}
+        value={drone.sound}
+        onChange={drone.setSound}
       />
 
       <p className="instructions">
-        Play a root + fifth drone to anchor the key while you practice. Pick a
-        key below — it changes live while the drone plays.
+        Play a root + fifth drone to anchor the key while you practice. It keeps
+        playing in other trainers, and Scales, Scale Degrees, Diatonic Chords,
+        and Ear Training switch to its key.
       </p>
 
       <button
         type="button"
-        className={playing ? 'drone-btn playing' : 'drone-btn'}
-        aria-pressed={playing}
-        aria-label={playing ? 'Pause drone' : 'Play drone'}
-        onClick={toggle}
+        className={drone.on ? 'drone-btn playing' : 'drone-btn'}
+        aria-pressed={drone.on}
+        aria-label={drone.on ? 'Pause drone' : 'Play drone'}
+        onClick={drone.toggle}
       >
         <svg viewBox="0 0 24 24" className="drone-icon" aria-hidden="true">
-          {playing ? (
+          {drone.on ? (
             <>
               <rect x="6" y="5" width="4" height="14" rx="1" />
               <rect x="14" y="5" width="4" height="14" rx="1" />
@@ -112,7 +71,7 @@ export default function DroneTrainer() {
         </span>
       </div>
 
-      <NotePicker selected={[key]} max={1} onChange={changeKey} />
+      <NotePicker selected={[drone.key]} max={1} onChange={changeKey} />
     </section>
   );
 }

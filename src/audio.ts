@@ -11,6 +11,15 @@ function getCtx(): AudioContext {
   return ctx;
 }
 
+/**
+ * Create or resume the audio context. Call from inside a tap/click handler:
+ * iOS only lets audio start from a user gesture, and React may start sound
+ * in an effect that runs just after the gesture.
+ */
+export function unlockAudio() {
+  getCtx();
+}
+
 /** MIDI number for a note in scientific pitch notation (A4 = 69). */
 export function midiOf(note: Note, octave: number): number {
   // NOTE_INDEX is anchored at A = 0; convert to semitones-above-C.
@@ -109,14 +118,22 @@ export function droneMidis(root: Note): number[] {
   return [r - 12, r, r + 7];
 }
 
-export type DroneSound = 'synth' | 'organ' | 'tanpura';
+export const DRONE_SOUNDS = ['synth', 'organ', 'tanpura'] as const;
+export type DroneSound = (typeof DRONE_SOUNDS)[number];
 
 export interface Drone {
   /** Move the drone to a new key. */
   setRoot(root: Note): void;
+  /** Dip the volume for `seconds` (e.g. under an ear-training prompt). */
+  duck(seconds: number): void;
   /** Fade out and release the oscillators. */
   stop(): void;
 }
+
+// Ducking: how far the drone dips under a prompt, and how fast it moves.
+const DUCK_LEVEL = 0.25;
+const DUCK_DOWN = 0.15;
+const DUCK_UP = 0.4;
 
 /** The sound-specific part of a drone, playing into a shared output. */
 interface DroneVoice {
@@ -372,6 +389,16 @@ export function startDrone(root: Note, sound: DroneSound = 'synth'): Drone {
   return {
     setRoot(next) {
       if (!stopped) voice.setRoot(next);
+    },
+    duck(seconds) {
+      if (stopped) return;
+      const t = audio.currentTime;
+      const full = DRONE_GAIN[sound];
+      master.gain.cancelScheduledValues(t);
+      master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), t);
+      master.gain.linearRampToValueAtTime(full * DUCK_LEVEL, t + DUCK_DOWN);
+      master.gain.setValueAtTime(full * DUCK_LEVEL, t + seconds);
+      master.gain.linearRampToValueAtTime(full, t + seconds + DUCK_UP);
     },
     stop() {
       if (stopped) return;

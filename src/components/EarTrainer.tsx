@@ -2,8 +2,10 @@ import { useState } from 'react';
 import IntervalTrainer from './IntervalTrainer';
 import ChordEarTrainer from './ChordEarTrainer';
 import SegmentedControl from './ui/SegmentedControl';
+import DroneKeyNotice from './ui/DroneKeyNotice';
 import { CHROMATIC, displayNote, type Note } from '../theory';
 import { oneOf, usePersistentState } from '../hooks/usePersistentState';
+import { useDrone } from '../drone/DroneContext';
 import './EarTrainer.css';
 
 // Sub-trainers within Ear Training. Future: 'note' (identify a played
@@ -39,7 +41,9 @@ export default function EarTrainer() {
   );
 
   // The active key constraint: null = pick a random key each round.
-  const activeFixedKey = keyMode === 'fixed' ? fixedKey : null;
+  // While the drone sounds, its key wins over the Random/Fixed setting.
+  const { lockedKey } = useDrone();
+  const activeFixedKey = lockedKey ?? (keyMode === 'fixed' ? fixedKey : null);
 
   return (
     <section className="trainer">
@@ -52,29 +56,33 @@ export default function EarTrainer() {
         onChange={setGame}
       />
 
-      <div className="ear-settings">
-        <span className="ear-settings-label">Key:</span>
-        <SegmentedControl
-          label="Key mode"
-          options={KEY_MODES}
-          value={keyMode}
-          onChange={setKeyMode}
-        />
-        {keyMode === 'fixed' && (
-          <select
-            className="key-select"
-            aria-label="Fixed key"
-            value={fixedKey}
-            onChange={(e) => setFixedKey(e.target.value as Note)}
-          >
-            {CHROMATIC.map((note) => (
-              <option key={note} value={note}>
-                {displayNote(note)}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+      {lockedKey ? (
+        <DroneKeyNotice lockedKey={lockedKey} />
+      ) : (
+        <div className="ear-settings">
+          <span className="ear-settings-label">Key:</span>
+          <SegmentedControl
+            label="Key mode"
+            options={KEY_MODES}
+            value={keyMode}
+            onChange={setKeyMode}
+          />
+          {keyMode === 'fixed' && (
+            <select
+              className="key-select"
+              aria-label="Fixed key"
+              value={fixedKey}
+              onChange={(e) => setFixedKey(e.target.value as Note)}
+            >
+              {CHROMATIC.map((note) => (
+                <option key={note} value={note}>
+                  {displayNote(note)}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
 
       {/* Remount on key-config change so the current round is regenerated
           under the new constraint. */}

@@ -3,6 +3,7 @@ import NotePicker from './NotePicker';
 import QuizActions from './ui/QuizActions';
 import ResultBanner from './ui/ResultBanner';
 import SegmentedControl from './ui/SegmentedControl';
+import DroneKeyNotice from './ui/DroneKeyNotice';
 import {
   CHROMATIC,
   NATURAL_NOTES,
@@ -23,6 +24,7 @@ import {
   usePersistentState,
 } from '../hooks/usePersistentState';
 import { useQuiz } from '../hooks/useQuiz';
+import { useDrone } from '../drone/DroneContext';
 import './ScaleTrainer.css';
 
 type Theme = 'major' | 'minor' | 'all';
@@ -51,8 +53,15 @@ function scalesFor(theme: Theme): ScaleType[] {
 }
 
 /** A new card, avoiding an immediate repeat of the previous one. */
-function newRound(theme: Theme, accidentals: boolean, prev?: Round): Round {
-  const roots = accidentals ? [...CHROMATIC] : NATURAL_NOTES;
+/** A new card, avoiding an immediate repeat. While the drone sounds, every
+ * card is rooted on its key (`lockedKey`). */
+function newRound(
+  theme: Theme,
+  accidentals: boolean,
+  lockedKey: Note | null,
+  prev?: Round,
+): Round {
+  const roots = lockedKey ? [lockedKey] : accidentals ? [...CHROMATIC] : NATURAL_NOTES;
   const scales = scalesFor(theme);
   let round: Round;
   do {
@@ -69,6 +78,7 @@ function newRound(theme: Theme, accidentals: boolean, prev?: Round): Round {
 const THEME_VALUES = THEMES.map((t) => t.value);
 
 export default function ScaleTrainer() {
+  const { lockedKey } = useDrone();
   const [theme, setTheme] = usePersistentState<Theme>(
     'scale-theme',
     'major',
@@ -81,7 +91,7 @@ export default function ScaleTrainer() {
   );
   const [selected, setSelected] = useState<Note[]>([]);
   const { round, graded, correct, grade, next } = useQuiz(
-    (prev?: Round) => newRound(theme, accidentals, prev),
+    (prev?: Round) => newRound(theme, accidentals, lockedKey, prev),
     () => setSelected([]),
   );
 
@@ -90,12 +100,12 @@ export default function ScaleTrainer() {
 
   function changeTheme(nextTheme: Theme) {
     setTheme(nextTheme);
-    next(newRound(nextTheme, accidentals));
+    next(newRound(nextTheme, accidentals, lockedKey));
   }
 
   function changeAccidentals(nextAccidentals: boolean) {
     setAccidentals(nextAccidentals);
-    next(newRound(theme, nextAccidentals));
+    next(newRound(theme, nextAccidentals, lockedKey));
   }
 
   // Spelled as in the key (F major has B♭), for the card and the reveal.
@@ -119,11 +129,14 @@ export default function ScaleTrainer() {
           <input
             type="checkbox"
             checked={accidentals}
+            disabled={lockedKey !== null}
             onChange={(e) => changeAccidentals(e.target.checked)}
           />
           Include sharp/flat notes
         </label>
       </div>
+
+      {lockedKey && <DroneKeyNotice lockedKey={lockedKey} />}
 
       <p className="instructions">
         Spell the scale: pick its seven notes in order, starting from the root.

@@ -23,9 +23,15 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
+  /* The tabs never fit beside the title, so give them their own row (the
+     title row also holds the drone indicator). */
+  flex-basis: 100%;
 }
 
 .tab {
+  /* The label can truncate on very narrow phones; the ▾ stays visible. */
+  display: inline-flex;
+  max-width: 100%;
   padding: 0.45rem 0.8rem;
   font-size: 0.95rem;
   white-space: nowrap;
@@ -33,6 +39,12 @@
   border-radius: 999px;
   background: var(--surface);
   color: var(--text);
+}
+
+.tab-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tab.active {
@@ -73,11 +85,14 @@
     display: none;
   }
 
+  /* A margin, not a leading space: the tab is a flex container, which
+     would drop a space at the start of the arrow's text. */
   .tab.active::after {
-    content: ' ▾';
+    content: '▾';
+    margin-left: 0.3em;
   }
 
   .tabs.expanded .tab.active::after {
-    content: ' ▴';
+    content: '▴';
   }
 }

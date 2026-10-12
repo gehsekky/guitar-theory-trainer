@@ -3,6 +3,7 @@ import NotePicker from './NotePicker';
 import QuizActions from './ui/QuizActions';
 import ResultBanner from './ui/ResultBanner';
 import SegmentedControl from './ui/SegmentedControl';
+import DroneKeyNotice from './ui/DroneKeyNotice';
 import {
   DEGREE_INFO,
   DEGREE_NAMES,
@@ -15,6 +16,7 @@ import {
 import { pick, randomInt, randomNote } from '../random';
 import { oneOf, usePersistentState } from '../hooks/usePersistentState';
 import { useQuiz } from '../hooks/useQuiz';
+import { useDrone } from '../drone/DroneContext';
 import './ScaleDegreeTrainer.css';
 
 type Mode = 'easy' | 'hard';
@@ -31,8 +33,9 @@ interface Round {
   answer: Note;
 }
 
-function newRound(mode: Mode): Round {
-  const root = randomNote();
+/** A new question; while the drone sounds, always in its key (`lockedKey`). */
+function newRound(mode: Mode, lockedKey: Note | null): Round {
+  const root = lockedKey ?? randomNote();
   const scaleType: ScaleType =
     mode === 'easy' ? 'major' : pick(['major', 'minor'] as ScaleType[]);
   const degree = randomInt(7);
@@ -45,6 +48,7 @@ function newRound(mode: Mode): Round {
 }
 
 export default function ScaleDegreeTrainer() {
+  const { lockedKey } = useDrone();
   const [mode, setMode] = usePersistentState<Mode>(
     'scale-degree-mode',
     'easy',
@@ -52,13 +56,13 @@ export default function ScaleDegreeTrainer() {
   );
   const [selected, setSelected] = useState<Note[]>([]);
   const { round, graded, correct, grade, next } = useQuiz(
-    () => newRound(mode),
+    () => newRound(mode, lockedKey),
     () => setSelected([]),
   );
 
   function changeMode(nextMode: Mode) {
     setMode(nextMode);
-    next(newRound(nextMode));
+    next(newRound(nextMode, lockedKey));
   }
 
   const spelled = spellScale(round.root, round.scaleType);
@@ -82,6 +86,8 @@ export default function ScaleDegreeTrainer() {
         value={mode}
         onChange={changeMode}
       />
+
+      {lockedKey && <DroneKeyNotice lockedKey={lockedKey} />}
 
       <p className="instructions">
         {mode === 'easy'

@@ -1,0 +1,9 @@
+.drone-key-notice {
+  margin: 0;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  color: var(--accent);
+  font-size: 0.9rem;
+  text-align: center;
+}
