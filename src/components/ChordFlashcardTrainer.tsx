@@ -2,7 +2,7 @@ import { useState } from 'react';
 import NotePicker from './NotePicker';
 import QuizActions from './ui/QuizActions';
 import ResultBanner from './ui/ResultBanner';
-import SegmentedControl from './ui/SegmentedControl';
+import Dropdown from './ui/Dropdown';
 import {
   CHORD_TYPES,
   CHROMATIC,
@@ -25,16 +25,45 @@ import {
 } from '../hooks/usePersistentState';
 import { useQuiz } from '../hooks/useQuiz';
 
-type Theme = 'major' | 'minor' | 'maj7' | 'all';
+const {
+  major,
+  minor,
+  diminished,
+  augmented,
+  major7,
+  dominant7,
+  minor7,
+  halfDiminished7,
+  diminished7,
+} = CHORD_TYPES;
 
-const { major, minor, major7 } = CHORD_TYPES;
+const TRIADS = [major, minor, diminished, augmented];
+const SEVENTHS = [major7, dominant7, minor7, halfDiminished7, diminished7];
 
-const THEMES: { value: Theme; label: string; chords: ChordType[] }[] = [
+// Single chord types first, then mixes, shown as two groups in the dropdown.
+// Saved ids predate the dropdown (major, minor, maj7, all), so keep them.
+const THEMES = [
   { value: 'major', label: 'Major', chords: [major] },
   { value: 'minor', label: 'Minor', chords: [minor] },
+  { value: 'diminished', label: 'Diminished', chords: [diminished] },
+  { value: 'augmented', label: 'Augmented', chords: [augmented] },
   { value: 'maj7', label: 'Major 7th', chords: [major7] },
-  { value: 'all', label: 'All', chords: [major, minor, major7] },
-];
+  { value: 'dom7', label: 'Dominant 7th', chords: [dominant7] },
+  { value: 'min7', label: 'Minor 7th', chords: [minor7] },
+  { value: 'halfDim7', label: 'Half-diminished 7th', chords: [halfDiminished7] },
+  { value: 'dim7', label: 'Diminished 7th', chords: [diminished7] },
+  { value: 'majorMinor', label: 'Major + minor', chords: [major, minor], mix: true },
+  { value: 'triads', label: 'All triads', chords: TRIADS, mix: true },
+  { value: 'sevenths', label: 'All 7th chords', chords: SEVENTHS, mix: true },
+  { value: 'all', label: 'All chords', chords: [...TRIADS, ...SEVENTHS], mix: true },
+] as const satisfies readonly {
+  value: string;
+  label: string;
+  chords: readonly ChordType[];
+  mix?: true;
+}[];
+
+type Theme = (typeof THEMES)[number]['value'];
 
 // Root-position role of each chord tone, by slot.
 const TONE_ROLES = ['root', '3rd', '5th', '7th'];
@@ -44,7 +73,7 @@ interface Round {
   chord: ChordType;
 }
 
-function chordsFor(theme: Theme): ChordType[] {
+function chordsFor(theme: Theme): readonly ChordType[] {
   return THEMES.find((t) => t.value === theme)!.chords;
 }
 
@@ -65,6 +94,11 @@ function newRound(theme: Theme, accidentals: boolean, prev?: Round): Round {
 }
 
 const THEME_VALUES = THEMES.map((t) => t.value);
+
+const THEME_GROUPS = [
+  { label: 'One chord', options: THEMES.filter((t) => !('mix' in t)) },
+  { label: 'Mix', options: THEMES.filter((t) => 'mix' in t) },
+];
 
 export default function ChordFlashcardTrainer() {
   const [theme, setTheme] = usePersistentState<Theme>(
@@ -107,9 +141,9 @@ export default function ChordFlashcardTrainer() {
       <h2>Chord Flashcards</h2>
 
       <div className="toggle-row">
-        <SegmentedControl
-          label="Chord theme"
-          options={THEMES}
+        <Dropdown
+          label="Chord"
+          groups={THEME_GROUPS}
           value={theme}
           onChange={changeTheme}
         />
@@ -124,8 +158,7 @@ export default function ChordFlashcardTrainer() {
       </div>
 
       <p className="instructions">
-        Spell the chord in root position: pick its notes in order, starting
-        from the root.
+        Spell the chord in order, root first.
       </p>
 
       <div className="flashcard" aria-label={`Flashcard: ${chordName}`}>

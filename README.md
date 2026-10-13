@@ -14,7 +14,9 @@ backend — all logic runs client-side and preferences persist in
 - **Chord Flashcards** — a flashcard shows a root note and chord type; spell
   the chord in root position by picking its notes in order (root, 3rd, 5th,
   and 7th for seventh chords). Order is graded.
-  - *Themes:* Major, Minor, Major 7th, or All (a mix of the three).
+  - *Chord* dropdown: one chord type (major, minor, diminished, augmented,
+    major 7th, dominant 7th, minor 7th, half-diminished 7th, diminished 7th)
+    or a mix (Major + minor, All triads, All 7th chords, All chords).
   - *Include sharp/flat notes* (on by default): when off, roots are naturals
     only — the chord tones themselves can still be sharp or flat.
 - **Sheet Music** — read a note on a treble staff (with key signature, ledger

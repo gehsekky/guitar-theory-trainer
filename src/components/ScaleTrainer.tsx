@@ -3,6 +3,7 @@ import NotePicker from './NotePicker';
 import QuizActions from './ui/QuizActions';
 import ResultBanner from './ui/ResultBanner';
 import DroneKeyNotice from './ui/DroneKeyNotice';
+import Dropdown from './ui/Dropdown';
 import {
   CHROMATIC,
   NATURAL_NOTES,
@@ -101,6 +102,11 @@ function newRound(
 
 const THEME_VALUES = THEMES.map((t) => t.value);
 
+const THEME_GROUPS = [
+  { label: 'One scale', options: THEMES.filter((t) => !t.mix) },
+  { label: 'Mix', options: THEMES.filter((t) => t.mix) },
+];
+
 export default function ScaleTrainer() {
   const { lockedKey } = useDrone();
   const [theme, setTheme] = usePersistentState<Theme>(
@@ -143,31 +149,12 @@ export default function ScaleTrainer() {
       <h2>Scale Trainer</h2>
 
       <div className="toggle-row">
-        <label className="scale-select-label">
-          Scale
-          <span className="scale-select-wrap">
-            <select
-              className="scale-select"
-              value={theme}
-              onChange={(e) => changeTheme(e.target.value as Theme)}
-            >
-              <optgroup label="One scale">
-                {THEMES.filter((t) => !t.mix).map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="Mix">
-                {THEMES.filter((t) => t.mix).map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
-          </span>
-        </label>
+        <Dropdown
+          label="Scale"
+          groups={THEME_GROUPS}
+          value={theme}
+          onChange={changeTheme}
+        />
         <label className="check-label">
           <input
             type="checkbox"
