@@ -182,7 +182,7 @@ export default function ScaleTrainer() {
       {lockedKey && <DroneKeyNotice lockedKey={lockedKey} />}
 
       <p className="instructions">
-        Spell the scale: pick its notes in order, starting from the root.
+        Spell the scale in order, root first.
       </p>
 
       <div className="flashcard" aria-label={`Flashcard: ${scaleName}`}>
