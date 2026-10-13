@@ -79,6 +79,16 @@
   gap: 0.5rem;
 }
 
+/* Small label naming what the line under it is, e.g. "Key" above "C major". */
+.prompt-caption {
+  margin-bottom: -0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .chord-name {
   font-size: 1.75rem;
   font-weight: 700;

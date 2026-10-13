@@ -96,11 +96,12 @@ export default function ScaleDegreeTrainer() {
       </p>
 
       <div className="chord-prompt">
+        <div className="prompt-caption">Key</div>
         <div className="chord-name">{scaleName}</div>
-        <div className="degree-name">
-          the {degreeName}{' '}
-          <span className="degree-num">(degree {round.degree + 1})</span>
+        <div className="degree-question">
+          Which note is the <span className="degree-name">{degreeName}</span>?
         </div>
+        <div className="degree-num">(degree {round.degree + 1})</div>
       </div>
 
       <NotePicker

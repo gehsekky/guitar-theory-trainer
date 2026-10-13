@@ -1,8 +1,15 @@
+.degree-question {
+  font-size: 1.2rem;
+  text-align: center;
+}
+
 .degree-name {
-  font-size: 1.35rem;
   font-weight: 600;
   color: var(--accent);
-  text-transform: capitalize;
+}
+
+.chord-prompt > .degree-num {
+  margin-top: -0.35rem;
 }
 
 .degree-num {
