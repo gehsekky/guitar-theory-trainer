@@ -21,9 +21,11 @@ backend — all logic runs client-side and preferences persist in
   lines, and accidentals).
   - *Easy:* key signature drawn and named; quarter notes.
   - *Hard:* key signature only (infer the key) and identify the note duration.
-- **Scales** — a flashcard shows a root note and scale type; spell the scale
-  by picking its seven notes in order, starting from the root. Order is graded.
-  - *Themes:* Major, Minor (natural), or All (a mix of both).
+- **Scales** — a flashcard shows a root note, scale type, and its step
+  pattern (e.g. W–W–H–W–W–W–H); spell the scale by picking its notes in
+  order, starting from the root. Order is graded.
+  - *Scale* dropdown: one scale (Major, Natural minor, Major pentatonic,
+    Minor pentatonic) or a mix (Major + minor, Both pentatonics, All scales).
   - *Include sharp/flat notes* (on by default): when off, roots are naturals
     only — the scale notes themselves can still be sharp or flat.
 - **Scale Degrees** — the seven degrees of a key and the chords built on
@@ -124,7 +126,9 @@ directly, so the library stays an implementation detail:
 - `spelling.ts`: spelled notes (`"Bb"`), display (`B♭`), and choosing a
   root's spelling by fewest accidentals
 - `scales.ts`: the scales the app teaches; adding one is a single `SCALES`
-  entry naming a Tonal scale
+  entry naming a Tonal scale, and its step pattern and degree numbers are
+  derived. `KEY_TYPES` marks the scales that define a key (seven degrees,
+  diatonic chords)
 - `chords.ts`: one `CHORD_TYPES` registry shared by every trainer
 - `diatonic.ts`: diatonic chords and Roman numerals, derived from each
   scale's mode

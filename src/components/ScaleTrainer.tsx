@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import NotePicker from './NotePicker';
 import QuizActions from './ui/QuizActions';
 import ResultBanner from './ui/ResultBanner';
-import SegmentedControl from './ui/SegmentedControl';
 import DroneKeyNotice from './ui/DroneKeyNotice';
 import {
   CHROMATIC,
   NATURAL_NOTES,
+  SCALE_DEGREES,
+  SCALE_STEPS,
   displayNote,
   formatNote,
   formatNotes,
@@ -27,21 +28,44 @@ import { useQuiz } from '../hooks/useQuiz';
 import { useDrone } from '../drone/DroneContext';
 import './ScaleTrainer.css';
 
-type Theme = 'major' | 'minor' | 'all';
+type Theme =
+  | 'major'
+  | 'minor'
+  | 'majorPentatonic'
+  | 'minorPentatonic'
+  | 'majorMinor'
+  | 'pentatonic'
+  | 'all';
 
-const THEMES: { value: Theme; label: string; scales: ScaleType[] }[] = [
+// Single scales first, then mixes, shown as two groups in the dropdown.
+const THEMES: { value: Theme; label: string; scales: ScaleType[]; mix?: true }[] = [
   { value: 'major', label: 'Major', scales: ['major'] },
-  { value: 'minor', label: 'Minor', scales: ['minor'] },
-  { value: 'all', label: 'All', scales: ['major', 'minor'] },
+  { value: 'minor', label: 'Natural minor', scales: ['minor'] },
+  { value: 'majorPentatonic', label: 'Major pentatonic', scales: ['majorPentatonic'] },
+  { value: 'minorPentatonic', label: 'Minor pentatonic', scales: ['minorPentatonic'] },
+  { value: 'majorMinor', label: 'Major + minor', scales: ['major', 'minor'], mix: true },
+  {
+    value: 'pentatonic',
+    label: 'Both pentatonics',
+    scales: ['majorPentatonic', 'minorPentatonic'],
+    mix: true,
+  },
+  {
+    value: 'all',
+    label: 'All scales',
+    scales: ['major', 'minor', 'majorPentatonic', 'minorPentatonic'],
+    mix: true,
+  },
 ];
 
 const SCALE_LABEL: Record<ScaleType, string> = {
   major: 'major',
   minor: 'natural minor',
+  majorPentatonic: 'major pentatonic',
+  minorPentatonic: 'minor pentatonic',
 };
 
-// Scale degree of each slot.
-const DEGREE_ROLES = ['root', '2nd', '3rd', '4th', '5th', '6th', '7th'];
+const ORDINALS = ['root', '2nd', '3rd', '4th', '5th', '6th', '7th'];
 
 interface Round {
   root: Note;
@@ -119,12 +143,31 @@ export default function ScaleTrainer() {
       <h2>Scale Trainer</h2>
 
       <div className="toggle-row">
-        <SegmentedControl
-          label="Scale theme"
-          options={THEMES}
-          value={theme}
-          onChange={changeTheme}
-        />
+        <label className="scale-select-label">
+          Scale
+          <span className="scale-select-wrap">
+            <select
+              className="scale-select"
+              value={theme}
+              onChange={(e) => changeTheme(e.target.value as Theme)}
+            >
+              <optgroup label="One scale">
+                {THEMES.filter((t) => !t.mix).map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Mix">
+                {THEMES.filter((t) => t.mix).map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </optgroup>
+            </select>
+          </span>
+        </label>
         <label className="check-label">
           <input
             type="checkbox"
@@ -139,15 +182,21 @@ export default function ScaleTrainer() {
       {lockedKey && <DroneKeyNotice lockedKey={lockedKey} />}
 
       <p className="instructions">
-        Spell the scale: pick its seven notes in order, starting from the root.
+        Spell the scale: pick its notes in order, starting from the root.
       </p>
 
       <div className="flashcard" aria-label={`Flashcard: ${scaleName}`}>
         <div className="flashcard-note">{formatNote(spelled[0])}</div>
         <div className="flashcard-quality">{SCALE_LABEL[round.scaleType]}</div>
+        <div className="scale-steps" aria-label="Step pattern">
+          {SCALE_STEPS[round.scaleType].join(' – ')}
+        </div>
       </div>
 
-      <div className="tone-slots scale-slots">
+      <div
+        className="tone-slots scale-slots"
+        style={{ '--slots': needed } as CSSProperties}
+      >
         {answer.map((tone, i) => {
           const pickedNote = selected[i];
           const right = graded && tone === pickedNote;
@@ -165,7 +214,9 @@ export default function ScaleTrainer() {
                       .map((name) => <span key={name}>{name}</span>)
                   : '?'}
               </span>
-              <span className="tone-role">{DEGREE_ROLES[i]}</span>
+              <span className="tone-role">
+                {ORDINALS[SCALE_DEGREES[round.scaleType][i] - 1]}
+              </span>
             </div>
           );
         })}

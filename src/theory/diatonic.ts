@@ -1,10 +1,10 @@
 // Diatonic chords: the triad built on each degree of a scale, with its Roman
 // numeral. Derived from the scale's mode in Tonal rather than a hand-written
-// table, so any scale added to SCALES gets its chords automatically.
+// table, so any key scale (KEY_TYPES) gets its chords automatically.
 
 import { get as getChord } from '@tonaljs/chord';
 import { triads } from '@tonaljs/mode';
-import { scaleNotes, spellScale, SCALES, type ScaleType } from './scales';
+import { KEY_TYPES, scaleNotes, spellScale, SCALES, type KeyType } from './scales';
 import type { Quality } from './chords';
 import type { Note } from './pitch';
 import type { SpelledNote } from './spelling';
@@ -31,7 +31,7 @@ function numeral(degree: number, quality: Quality): string {
   }
 }
 
-function diatonicChords(type: ScaleType): DiatonicChord[] {
+function diatonicChords(type: KeyType): DiatonicChord[] {
   return triads(SCALES[type].mode, 'C').map((symbol, degree) => {
     const quality = getChord(symbol).quality.toLowerCase() as Quality;
     return { numeral: numeral(degree, quality), quality };
@@ -41,13 +41,13 @@ function diatonicChords(type: ScaleType): DiatonicChord[] {
 // Major:  I  ii  iii  IV  V  vi  vii°
 // Minor:  i  ii°  III  iv  v  VI  VII
 export const DIATONIC = Object.fromEntries(
-  Object.keys(SCALES).map((type) => [type, diatonicChords(type as ScaleType)]),
-) as Record<ScaleType, DiatonicChord[]>;
+  KEY_TYPES.map((type) => [type, diatonicChords(type)]),
+) as Record<KeyType, DiatonicChord[]>;
 
 /** The three notes of the diatonic triad on a scale degree (stacked thirds). */
 export function diatonicTriad(
   root: Note,
-  type: ScaleType,
+  type: KeyType,
   degree: number,
 ): [Note, Note, Note] {
   const notes = scaleNotes(root, type);
@@ -58,7 +58,7 @@ export function diatonicTriad(
 /** The diatonic triad on a scale degree, spelled in its key: IV of F → B♭ D F. */
 export function spellDiatonicTriad(
   root: Note,
-  type: ScaleType,
+  type: KeyType,
   degree: number,
 ): [SpelledNote, SpelledNote, SpelledNote] {
   const notes = spellScale(root, type);

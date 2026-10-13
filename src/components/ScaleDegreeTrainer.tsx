@@ -16,7 +16,7 @@ import {
   spellDiatonicTriad,
   type Note,
   type Quality,
-  type ScaleType,
+  type KeyType,
 } from '../theory';
 import { pick, randomInt, randomNote } from '../random';
 import { oneOf, readSetting, usePersistentState } from '../hooks/usePersistentState';
@@ -28,7 +28,7 @@ import './ScaleDegreeTrainer.css';
 // which note a degree is, which chord a Roman numeral is, and which
 // numeral a chord is.
 type Quiz = 'note' | 'chord' | 'numeral';
-type Keys = ScaleType | 'both';
+type Keys = KeyType | 'both';
 
 const QUIZZES = [
   { value: 'note', label: 'Note' },
@@ -54,7 +54,7 @@ const legacyKeys = (): Keys =>
 
 interface Round {
   root: Note;
-  scaleType: ScaleType;
+  scaleType: KeyType;
   degree: number; // 0-6
 }
 
@@ -62,7 +62,7 @@ interface Round {
 function newRound(keys: Keys, lockedKey: Note | null): Round {
   return {
     root: lockedKey ?? randomNote(),
-    scaleType: keys === 'both' ? pick<ScaleType>(['major', 'minor']) : keys,
+    scaleType: keys === 'both' ? pick<KeyType>(['major', 'minor']) : keys,
     degree: randomInt(7),
   };
 }

@@ -12,7 +12,9 @@ import {
   NATURAL_NOTES,
   NOTE_INDEX,
   QUALITY_LABEL,
-  SCALE_INTERVALS,
+  KEY_TYPES,
+  SCALE_DEGREES,
+  SCALE_STEPS,
   STRINGS,
   TRIAD_INTERVALS,
   chordNotes,
@@ -23,6 +25,7 @@ import {
   sameNoteOrder,
   sameNoteSet,
   scaleNotes,
+  spellScale,
   transpose,
   triadNotes,
 } from './index';
@@ -192,17 +195,29 @@ describe('scales', () => {
   });
 
   it('major follows W-W-H-W-W-W-H', () => {
-    const steps = [...SCALE_INTERVALS.major, 12]
-      .slice(1)
-      .map((v, i) => v - SCALE_INTERVALS.major[i]);
-    expect(steps).toEqual([2, 2, 1, 2, 2, 2, 1]);
+    expect(SCALE_STEPS.major).toEqual(['W', 'W', 'H', 'W', 'W', 'W', 'H']);
   });
 
   it('natural minor follows W-H-W-W-H-W-W', () => {
-    const steps = [...SCALE_INTERVALS.minor, 12]
-      .slice(1)
-      .map((v, i) => v - SCALE_INTERVALS.minor[i]);
-    expect(steps).toEqual([2, 1, 2, 2, 1, 2, 2]);
+    expect(SCALE_STEPS.minor).toEqual(['W', 'H', 'W', 'W', 'H', 'W', 'W']);
+  });
+
+  it('spells pentatonic scales', () => {
+    expect(scaleNotes('C', 'majorPentatonic')).toEqual(['C', 'D', 'E', 'G', 'A']);
+    expect(scaleNotes('A', 'minorPentatonic')).toEqual(['A', 'C', 'D', 'E', 'G']);
+    expect(spellScale('A#', 'minorPentatonic')).toEqual(['Bb', 'Db', 'Eb', 'F', 'Ab']);
+  });
+
+  it('pentatonics skip degrees and step by W+H', () => {
+    expect(SCALE_DEGREES.majorPentatonic).toEqual([1, 2, 3, 5, 6]);
+    expect(SCALE_DEGREES.minorPentatonic).toEqual([1, 3, 4, 5, 7]);
+    expect(SCALE_STEPS.majorPentatonic).toEqual(['W', 'W', 'W+H', 'W', 'W+H']);
+    expect(SCALE_STEPS.minorPentatonic).toEqual(['W+H', 'W', 'W', 'W+H', 'W']);
+  });
+
+  it('only major and minor are keys with diatonic chords', () => {
+    expect(KEY_TYPES).toEqual(['major', 'minor']);
+    expect(Object.keys(DIATONIC)).toEqual(['major', 'minor']);
   });
 });
 

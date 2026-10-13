@@ -18,8 +18,14 @@
   color: #fff;
 }
 
+/* Phones: side padding shrinks with the screen so four options still fit
+   at 320px wide. */
 @media (max-width: 480px) {
+  .mode-toggle {
+    max-width: 100%;
+  }
+
   .mode-btn {
-    padding: 0.4rem 0.9rem;
+    padding: 0.4rem clamp(0.4rem, 3.5vw - 0.4rem, 0.9rem);
   }
 }

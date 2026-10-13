@@ -1,13 +1,13 @@
 // Teaching content for scale degrees: functional names and a short note on
 // each degree's harmonic role, shown after grading.
 
-import type { ScaleType } from './scales';
+import type { KeyType } from './scales';
 
 // Functional names for each scale degree (index 0 = degree 1 = tonic).
 // Degrees 1-6 share names across qualities; the 7th differs: a half-step
 // below the tonic is the "leading tone" (major), a whole-step below is
 // the "subtonic" (natural minor).
-export const DEGREE_NAMES: Record<ScaleType, string[]> = {
+export const DEGREE_NAMES: Record<KeyType, string[]> = {
   major: [
     'tonic',
     'supertonic',
@@ -30,7 +30,7 @@ export const DEGREE_NAMES: Record<ScaleType, string[]> = {
 
 // Short notes on each degree's harmonic function and compositional use.
 // Shown after grading as an educational blurb.
-export const DEGREE_INFO: Record<ScaleType, string[]> = {
+export const DEGREE_INFO: Record<KeyType, string[]> = {
   major: [
     'Home base — the tonal center every other note pulls toward. Pieces usually begin and end here, and it is the point of ultimate rest.',
     'A classic pre-dominant: the ii chord built on it sets up the dominant and pushes the music toward a cadence.',

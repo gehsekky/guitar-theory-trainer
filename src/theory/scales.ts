@@ -1,24 +1,33 @@
 // Scales the app teaches. Each entry names a scale in Tonal's dictionary, so
 // spelling and intervals come from Tonal; adding a scale is one entry here.
+// Key scales (major and natural minor) also have a mode, which gives them
+// seven named degrees and diatonic chords; pentatonics are just spelled.
 
 import { get as getScale } from '@tonaljs/scale';
-import { semitones } from '@tonaljs/interval';
+import { get as getInterval, semitones } from '@tonaljs/interval';
 import { pitchClass, type Note } from './pitch';
 import { spellRoot, type SpelledNote } from './spelling';
 
 interface ScaleDef {
   /** Scale name in Tonal's dictionary. */
   tonal: string;
-  /** Mode name used to derive diatonic chords (see diatonic.ts). */
-  mode: string;
+  /** Key scales only: mode name used to derive diatonic chords (see
+   * diatonic.ts). */
+  mode?: string;
 }
 
 export const SCALES = {
   major: { tonal: 'major', mode: 'ionian' },
   minor: { tonal: 'aeolian', mode: 'aeolian' }, // natural minor
+  majorPentatonic: { tonal: 'major pentatonic' },
+  minorPentatonic: { tonal: 'minor pentatonic' },
 } as const satisfies Record<string, ScaleDef>;
 
 export type ScaleType = keyof typeof SCALES;
+
+/** Scales that define a key: seven degrees, each with a diatonic chord. */
+export const KEY_TYPES = ['major', 'minor'] as const satisfies readonly ScaleType[];
+export type KeyType = (typeof KEY_TYPES)[number];
 
 /** Semitone offsets from the root for each scale degree. */
 export const SCALE_INTERVALS = Object.fromEntries(
@@ -27,6 +36,30 @@ export const SCALE_INTERVALS = Object.fromEntries(
     getScale(`C ${def.tonal}`).intervals.map(semitones),
   ]),
 ) as Record<ScaleType, number[]>;
+
+/** Which scale degree each note is (1 = root), e.g. major pentatonic is
+ * 1 2 3 5 6. */
+export const SCALE_DEGREES = Object.fromEntries(
+  Object.entries(SCALES).map(([type, def]) => [
+    type,
+    getScale(`C ${def.tonal}`).intervals.map((name) => getInterval(name).num),
+  ]),
+) as Record<ScaleType, number[]>;
+
+/** A step between neighboring scale notes: Whole, Half, or the augmented
+ * second (W+H) that scales like harmonic minor need. */
+export type Step = 'W' | 'H' | 'W+H';
+
+const STEP_NAMES: Record<number, Step> = { 1: 'H', 2: 'W', 3: 'W+H' };
+
+/** Each scale's step pattern, root up to the octave: major is
+ * W-W-H-W-W-W-H. */
+export const SCALE_STEPS = Object.fromEntries(
+  Object.entries(SCALE_INTERVALS).map(([type, offsets]) => [
+    type,
+    offsets.map((offset, i) => STEP_NAMES[(offsets[i + 1] ?? 12) - offset]),
+  ]),
+) as Record<ScaleType, Step[]>;
 
 function scaleOn(tonic: SpelledNote, type: ScaleType): SpelledNote[] {
   return getScale(`${tonic} ${SCALES[type].tonal}`).notes;
