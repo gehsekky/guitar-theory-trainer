@@ -26,15 +26,14 @@ backend — all logic runs client-side and preferences persist in
   - *Themes:* Major, Minor (natural), or All (a mix of both).
   - *Include sharp/flat notes* (on by default): when off, roots are naturals
     only — the scale notes themselves can still be sharp or flat.
-- **Scale Degrees** — name the note for a functional scale degree (tonic,
-  dominant, leading tone, …), with a description of each degree's harmonic role.
-  - *Easy:* major keys only.
-  - *Hard:* major or natural-minor keys.
-- **Diatonic Chords** — work with the chords built on each degree of a key,
-  in major or natural minor.
-  - *Find Chord:* given a key and Roman numeral (e.g. `vi` in G major), pick
-    the chord's root and quality.
-  - *Name Numeral:* given a key and a chord, pick its Roman numeral.
+- **Scale Degrees** — the seven degrees of a key and the chords built on
+  them. *Keys:* Major, Minor (natural), or Both.
+  - *Note:* name the note for a functional scale degree (tonic, dominant,
+    leading tone, …).
+  - *Chord:* given a Roman numeral (e.g. `vi` in G major), pick the chord's
+    root and quality.
+  - *Numeral:* given a chord, pick its Roman numeral.
+  - After each answer, a note explains that degree's harmonic role.
 - **Ear Training** — tones are synthesized with the Web Audio API. The key can
   be random each round or fixed to a chosen note; both games share it.
   - *Intervals:* hear a tonic, then a second note, then both together, and
@@ -49,8 +48,8 @@ backend — all logic runs client-side and preferences persist in
   (where the browser supports the Screen Wake Lock API).
   - *Practicing with the drone:* it keeps playing as you switch trainers, and
     a header control shows its key and stops it from anywhere. While it
-    sounds, Scales, Scale Degrees, Diatonic Chords, and Ear Training use its
-    key (each says so), and ear-training prompts briefly dip it. Sheet Music
+    sounds, Scales, Scale Degrees, and Ear Training use its key (each says
+    so), and ear-training prompts briefly dip it. Sheet Music
     and Chord Flashcards change key every round, so the drone pauses there
     and resumes when you leave; Neck Notes leaves it playing.
   - *Sounds:* Synth (detuned sawtooths, slowly breathing filter), Organ

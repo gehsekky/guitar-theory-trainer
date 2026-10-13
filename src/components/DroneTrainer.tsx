@@ -41,8 +41,8 @@ export default function DroneTrainer() {
 
       <p className="instructions">
         Play a root + fifth drone to anchor the key while you practice. It keeps
-        playing in other trainers, and Scales, Scale Degrees, Diatonic Chords,
-        and Ear Training switch to its key.
+        playing in other trainers, and Scales, Scale Degrees, and Ear Training
+        switch to its key.
       </p>
 
       <button

@@ -1,19 +1,9 @@
-.degree-question {
-  font-size: 1.2rem;
-  text-align: center;
-}
-
 .degree-name {
   font-weight: 600;
   color: var(--accent);
 }
 
-.chord-prompt > .degree-num {
-  margin-top: -0.35rem;
-}
-
 .degree-num {
-  text-transform: none;
   font-size: 0.85em;
   font-weight: 500;
   color: var(--muted);
@@ -30,7 +20,6 @@
 
 .degree-info-title {
   font-weight: 700;
-  text-transform: capitalize;
   margin-bottom: 0.35rem;
 }
 
@@ -39,4 +28,23 @@
   color: var(--muted);
   font-size: 0.95rem;
   line-height: 1.55;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.numeral-display {
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.03em;
+}
+
+.numeral-btn {
+  font-variant-numeric: normal;
+  letter-spacing: 0.02em;
+}
+
+.nowrap {
+  white-space: nowrap;
 }

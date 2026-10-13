@@ -5,7 +5,6 @@ import SheetTrainer from './components/SheetTrainer';
 import ScaleTrainer from './components/ScaleTrainer';
 import EarTrainer from './components/EarTrainer';
 import ScaleDegreeTrainer from './components/ScaleDegreeTrainer';
-import DiatonicChordTrainer from './components/DiatonicChordTrainer';
 import DroneTrainer from './components/DroneTrainer';
 import DroneIndicator from './components/DroneIndicator';
 import { useDrone, type DronePolicy } from './drone/DroneContext';
@@ -22,7 +21,6 @@ const TABS = [
   { id: 'sheet-music', label: 'Sheet Music', Trainer: SheetTrainer, drone: 'pause' },
   { id: 'scales', label: 'Scales', Trainer: ScaleTrainer, drone: 'lock' },
   { id: 'scale-degrees', label: 'Scale Degrees', Trainer: ScaleDegreeTrainer, drone: 'lock' },
-  { id: 'diatonic-chords', label: 'Diatonic Chords', Trainer: DiatonicChordTrainer, drone: 'lock' },
   { id: 'ear-training', label: 'Ear Training', Trainer: EarTrainer, drone: 'lock' },
   { id: 'drone', label: 'Drone', Trainer: DroneTrainer, drone: 'free' },
 ] as const satisfies readonly {
@@ -33,11 +31,17 @@ const TABS = [
 }[];
 
 const TAB_IDS = TABS.map((t) => t.id);
+type TabId = (typeof TAB_IDS)[number];
+
+// Retired tab ids, so old links and a saved last tab still open something.
+const TAB_ALIASES: Readonly<Record<string, TabId>> = {
+  'diatonic-chords': 'scale-degrees', // merged into Scale Degrees
+};
 
 const APP_TITLE = 'Guitar Theory Trainer';
 
 export default function App() {
-  const [tab, navigate] = useTabRoute(TAB_IDS, 'neck-notes');
+  const [tab, navigate] = useTabRoute(TAB_IDS, 'neck-notes', TAB_ALIASES);
   // On phones only the active tab shows; tapping it reveals the rest.
   const [tabsExpanded, setTabsExpanded] = useState(false);
   const { Trainer, label, drone: policy } = TABS.find((t) => t.id === tab)!;

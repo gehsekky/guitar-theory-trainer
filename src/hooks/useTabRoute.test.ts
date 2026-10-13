@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { initialTab, tabFromHash } from './useTabRoute';
 
 const IDS = ['neck-notes', 'scales', 'drone'] as const;
+const ALIASES = { 'old-scales': 'scales' } as const;
 
 describe('tabFromHash', () => {
   it('reads "#/id" and "#id"', () => {
@@ -13,6 +14,11 @@ describe('tabFromHash', () => {
     expect(tabFromHash('', IDS)).toBeUndefined();
     expect(tabFromHash('#/', IDS)).toBeUndefined();
     expect(tabFromHash('#/nope', IDS)).toBeUndefined();
+  });
+
+  it('follows aliases for retired tabs', () => {
+    expect(tabFromHash('#/old-scales', IDS, ALIASES)).toBe('scales');
+    expect(tabFromHash('#/old-scales', IDS)).toBeUndefined();
   });
 });
 
@@ -37,6 +43,11 @@ describe('initialTab', () => {
     stored['guitar-theory-trainer.last-tab'] = 'drone';
     expect(initialTab('', IDS, 'neck-notes')).toBe('drone');
     expect(initialTab('#/nope', IDS, 'neck-notes')).toBe('drone');
+  });
+
+  it('maps a saved retired tab to its replacement', () => {
+    stored['guitar-theory-trainer.last-tab'] = 'old-scales';
+    expect(initialTab('', IDS, 'neck-notes', ALIASES)).toBe('scales');
   });
 
   it('ignores a saved tab that no longer exists', () => {
