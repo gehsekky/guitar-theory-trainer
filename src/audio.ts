@@ -118,7 +118,7 @@ export function droneMidis(root: Note): number[] {
   return [r - 12, r, r + 7];
 }
 
-export const DRONE_SOUNDS = ['synth', 'organ', 'tanpura'] as const;
+export const DRONE_SOUNDS = ['tanpura', 'synth', 'organ'] as const;
 export type DroneSound = (typeof DRONE_SOUNDS)[number];
 
 export interface Drone {
@@ -374,7 +374,7 @@ function allowPlaybackWhenMuted() {
 }
 
 /** Start a sustained root + fifth drone. Call stop() on the result to end it. */
-export function startDrone(root: Note, sound: DroneSound = 'synth'): Drone {
+export function startDrone(root: Note, sound: DroneSound = 'tanpura'): Drone {
   allowPlaybackWhenMuted();
   const audio = getCtx();
   const now = audio.currentTime;

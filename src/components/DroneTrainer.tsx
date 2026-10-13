@@ -6,9 +6,9 @@ import { useDrone } from '../drone/DroneContext';
 import './DroneTrainer.css';
 
 const SOUNDS = [
+  { value: 'tanpura', label: 'Tanpura' },
   { value: 'synth', label: 'Synth' },
   { value: 'organ', label: 'Organ' },
-  { value: 'tanpura', label: 'Tanpura' },
 ] as const satisfies readonly { value: DroneSound; label: string }[];
 
 const PERFECT_FIFTH = INTERVALS.find((i) => i.short === 'P5')!;

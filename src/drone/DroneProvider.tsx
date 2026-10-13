@@ -19,7 +19,7 @@ export default function DroneProvider({ children }: { children: ReactNode }) {
   const [key, setKey] = usePersistentState<Note>('drone-key', 'E', oneOf(CHROMATIC));
   const [sound, setSound] = usePersistentState<DroneSound>(
     'drone-sound',
-    'synth',
+    'tanpura',
     oneOf(DRONE_SOUNDS),
   );
   const [on, setOn] = useState(false);

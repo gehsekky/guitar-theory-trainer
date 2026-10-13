@@ -56,12 +56,12 @@ backend — all logic runs client-side and preferences persist in
     so), and ear-training prompts briefly dip it. Sheet Music
     and Chord Flashcards change key every round, so the drone pauses there
     and resumes when you leave; Neck Notes leaves it playing.
-  - *Sounds:* Synth (detuned sawtooths, slowly breathing filter), Organ
-    (steady drawbar-style sine partials), or Tanpura (modeled on measurements
-    of a real tanpura: Pa, Sa, Sa, low Sa plucked across an 8 s cycle with a
-    little human timing variation, soft attacks, long overlapping ring, and
-    a buzz that blooms after each pluck). Switching while playing crossfades
-    for easy comparison.
+  - *Sounds:* Tanpura, the default (modeled on measurements of a real
+    tanpura: Pa, Sa, Sa, low Sa plucked across an 8 s cycle with a little
+    human timing variation, soft attacks, long overlapping ring, and a buzz
+    that blooms after each pluck), Synth (detuned sawtooths, slowly breathing
+    filter), or Organ (steady drawbar-style sine partials). Switching while
+    playing crossfades for easy comparison.
 
 Notes in a key, scale, chord, or interval are spelled correctly for that
 context (F major has B♭, not A♯; A♯ major is shown as B♭ major), and a written
