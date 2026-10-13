@@ -4,6 +4,7 @@
 import { getChord } from '@tonaljs/chord';
 import { get as getChordType } from '@tonaljs/chord-type';
 import { semitones } from '@tonaljs/interval';
+import { degreeLabel } from './intervals';
 import { transpose, type Note } from './pitch';
 import { spellRoot, type SpelledNote } from './spelling';
 
@@ -11,6 +12,8 @@ import { spellRoot, type SpelledNote } from './spelling';
 export interface ChordType {
   name: string;
   intervals: number[];
+  /** Each tone's degree, e.g. root ♭3rd ♭5th for diminished. */
+  degrees: string[];
   /** Symbol in Tonal's chord dictionary ("m7b5"), used for spelling. */
   symbol: string;
 }
@@ -19,7 +22,12 @@ export interface ChordType {
 function chordType(symbol: string, name: string): ChordType {
   const { intervals, empty } = getChordType(symbol);
   if (empty) throw new Error(`Unknown chord type: "${symbol}"`);
-  return { name, intervals: intervals.map(semitones), symbol };
+  return {
+    name,
+    intervals: intervals.map(semitones),
+    degrees: intervals.map(degreeLabel),
+    symbol,
+  };
 }
 
 export const CHORD_TYPES = {

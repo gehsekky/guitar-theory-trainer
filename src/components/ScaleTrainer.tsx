@@ -66,7 +66,6 @@ const SCALE_LABEL: Record<ScaleType, string> = {
   minorPentatonic: 'minor pentatonic',
 };
 
-const ORDINALS = ['root', '2nd', '3rd', '4th', '5th', '6th', '7th'];
 
 interface Round {
   root: Note;
@@ -202,7 +201,7 @@ export default function ScaleTrainer() {
                   : '?'}
               </span>
               <span className="tone-role">
-                {ORDINALS[SCALE_DEGREES[round.scaleType][i] - 1]}
+                {SCALE_DEGREES[round.scaleType][i]}
               </span>
             </div>
           );

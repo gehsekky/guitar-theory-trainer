@@ -198,6 +198,11 @@ describe('scales', () => {
     expect(SCALE_STEPS.major).toEqual(['W', 'W', 'H', 'W', 'W', 'W', 'H']);
   });
 
+  it('label degrees with their accidentals', () => {
+    expect(SCALE_DEGREES.major.join(' ')).toBe('root 2nd 3rd 4th 5th 6th 7th');
+    expect(SCALE_DEGREES.minor.join(' ')).toBe('root 2nd ♭3rd 4th 5th ♭6th ♭7th');
+  });
+
   it('natural minor follows W-H-W-W-H-W-W', () => {
     expect(SCALE_STEPS.minor).toEqual(['W', 'H', 'W', 'W', 'H', 'W', 'W']);
   });
@@ -209,8 +214,8 @@ describe('scales', () => {
   });
 
   it('pentatonics skip degrees and step by W+H', () => {
-    expect(SCALE_DEGREES.majorPentatonic).toEqual([1, 2, 3, 5, 6]);
-    expect(SCALE_DEGREES.minorPentatonic).toEqual([1, 3, 4, 5, 7]);
+    expect(SCALE_DEGREES.majorPentatonic.join(' ')).toBe('root 2nd 3rd 5th 6th');
+    expect(SCALE_DEGREES.minorPentatonic.join(' ')).toBe('root ♭3rd 4th 5th ♭7th');
     expect(SCALE_STEPS.majorPentatonic).toEqual(['W', 'W', 'W+H', 'W', 'W+H']);
     expect(SCALE_STEPS.minorPentatonic).toEqual(['W+H', 'W', 'W', 'W+H', 'W']);
   });
@@ -322,5 +327,22 @@ describe('chord types (from Tonal)', () => {
     expect(CHORD_TYPES.minor7.intervals).toEqual([0, 3, 7, 10]);
     expect(CHORD_TYPES.halfDiminished7.intervals).toEqual([0, 3, 6, 10]);
     expect(CHORD_TYPES.diminished7.intervals).toEqual([0, 3, 6, 9]);
+  });
+
+  it('label each tone with its degree and accidental', () => {
+    const degrees = Object.fromEntries(
+      Object.entries(CHORD_TYPES).map(([key, chord]) => [key, chord.degrees.join(' ')]),
+    );
+    expect(degrees).toEqual({
+      major: 'root 3rd 5th',
+      minor: 'root ♭3rd 5th',
+      diminished: 'root ♭3rd ♭5th',
+      augmented: 'root 3rd ♯5th',
+      major7: 'root 3rd 5th 7th',
+      dominant7: 'root 3rd 5th ♭7th',
+      minor7: 'root ♭3rd 5th ♭7th',
+      halfDiminished7: 'root ♭3rd ♭5th ♭7th',
+      diminished7: 'root ♭3rd ♭5th 𝄫7th',
+    });
   });
 });

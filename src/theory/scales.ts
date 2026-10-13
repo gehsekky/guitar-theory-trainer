@@ -4,7 +4,8 @@
 // seven named degrees and diatonic chords; pentatonics are just spelled.
 
 import { get as getScale } from '@tonaljs/scale';
-import { get as getInterval, semitones } from '@tonaljs/interval';
+import { semitones } from '@tonaljs/interval';
+import { degreeLabel } from './intervals';
 import { pitchClass, type Note } from './pitch';
 import { spellRoot, type SpelledNote } from './spelling';
 
@@ -37,14 +38,14 @@ export const SCALE_INTERVALS = Object.fromEntries(
   ]),
 ) as Record<ScaleType, number[]>;
 
-/** Which scale degree each note is (1 = root), e.g. major pentatonic is
- * 1 2 3 5 6. */
+/** Each note's degree against the major scale, e.g. minor pentatonic is
+ * root ♭3rd 4th 5th ♭7th. */
 export const SCALE_DEGREES = Object.fromEntries(
   Object.entries(SCALES).map(([type, def]) => [
     type,
-    getScale(`C ${def.tonal}`).intervals.map((name) => getInterval(name).num),
+    getScale(`C ${def.tonal}`).intervals.map(degreeLabel),
   ]),
-) as Record<ScaleType, number[]>;
+) as Record<ScaleType, string[]>;
 
 /** A step between neighboring scale notes: Whole, Half, or the augmented
  * second (W+H) that scales like harmonic minor need. */

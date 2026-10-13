@@ -65,9 +65,6 @@ const THEMES = [
 
 type Theme = (typeof THEMES)[number]['value'];
 
-// Root-position role of each chord tone, by slot.
-const TONE_ROLES = ['root', '3rd', '5th', '7th'];
-
 interface Round {
   root: Note;
   chord: ChordType;
@@ -182,7 +179,7 @@ export default function ChordFlashcardTrainer() {
                     ? displayNote(pickedNote)
                     : '?'}
               </span>
-              <span className="tone-role">{TONE_ROLES[i]}</span>
+              <span className="tone-role">{round.chord.degrees[i]}</span>
             </div>
           );
         })}
