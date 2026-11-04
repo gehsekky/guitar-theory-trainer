@@ -140,9 +140,9 @@ directly, so the library stays an implementation detail:
 - `notation.ts`: treble-staff positions, written accidentals, durations
 - `guitar.ts`: tuning and fretboard, kept free of app code
 
-The `@tonaljs/*` packages are pinned to exact versions, with an `overrides`
-entry for `@tonaljs/pitch-interval`, because Tonal's 2026-09-28 release
-was published with missing `main`/`types` files.
+The `@tonaljs/*` packages are pinned to exact versions because Tonal's
+2026-09-28 release was published with missing `main`/`types` files, so
+upgrade them deliberately and check that they still build.
 
 UI and rendering (fretboard, staff, synthesized audio) use no external
 libraries. The treble clef and the sharps, flats, and naturals are SVG
