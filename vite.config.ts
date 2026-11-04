@@ -24,7 +24,7 @@ export default defineConfig({
         name: 'Guitar Theory Trainer',
         short_name: 'GTT',
         description:
-          'Practice guitar theory: notes on the neck, chords, scales, sheet music, ear training, and drones.',
+          'Practice guitar theory: notes on the neck, chords, scales, sheet music, ear training, drones, and a metronome.',
         start_url: '/',
         scope: '/',
         display: 'standalone',

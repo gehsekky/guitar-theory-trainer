@@ -5,8 +5,9 @@ import SheetTrainer from './components/SheetTrainer';
 import ScaleTrainer from './components/ScaleTrainer';
 import EarTrainer from './components/EarTrainer';
 import ScaleDegreeTrainer from './components/ScaleDegreeTrainer';
-import DroneTrainer from './components/DroneTrainer';
-import DroneIndicator from './components/DroneIndicator';
+import PracticeToolsTrainer from './components/PracticeToolsTrainer';
+import PracticeIndicator from './components/PracticeIndicator';
+import AudioInterruptedNotice from './components/ui/AudioInterruptedNotice';
 import { useDrone, type DronePolicy } from './drone/DroneContext';
 import { useTabRoute } from './hooks/useTabRoute';
 import './App.css';
@@ -22,7 +23,7 @@ const TABS = [
   { id: 'scales', label: 'Scales', Trainer: ScaleTrainer, drone: 'lock' },
   { id: 'scale-degrees', label: 'Scale Degrees', Trainer: ScaleDegreeTrainer, drone: 'lock' },
   { id: 'ear-training', label: 'Ear Training', Trainer: EarTrainer, drone: 'lock' },
-  { id: 'drone', label: 'Drone', Trainer: DroneTrainer, drone: 'free' },
+  { id: 'practice-tools', label: 'Practice Tools', Trainer: PracticeToolsTrainer, drone: 'free' },
 ] as const satisfies readonly {
   id: string;
   label: string;
@@ -36,6 +37,7 @@ type TabId = (typeof TAB_IDS)[number];
 // Retired tab ids, so old links and a saved last tab still open something.
 const TAB_ALIASES: Readonly<Record<string, TabId>> = {
   'diatonic-chords': 'scale-degrees', // merged into Scale Degrees
+  drone: 'practice-tools', // grew into Practice Tools with the metronome
 };
 
 const APP_TITLE = 'Guitar Theory Trainer';
@@ -72,7 +74,7 @@ export default function App() {
           🎸 <span className="title-full">Guitar Theory Trainer</span>
           <span className="title-short">GTT</span>
         </h1>
-        {tab !== 'drone' && <DroneIndicator />}
+        {tab !== 'practice-tools' && <PracticeIndicator />}
         <nav
           className={tabsExpanded ? 'tabs expanded' : 'tabs'}
           role="tablist"
@@ -97,6 +99,7 @@ export default function App() {
       </header>
 
       <main>
+        <AudioInterruptedNotice />
         <Trainer key={trainerKey} />
       </main>
     </div>

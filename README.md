@@ -46,16 +46,23 @@ backend — all logic runs client-side and preferences persist in
     name its quality. Easy is major/minor; hard adds diminished, augmented,
     and five seventh chords (major 7th, dominant 7th, minor 7th,
     half-diminished 7th, diminished 7th).
-- **Drone** — a sustained root + fifth drone (synthesized) to anchor a key
-  while you practice. Tap the big button to play or pause; pick the key from
-  the note grid, and it changes live. The screen stays on while it plays
-  (where the browser supports the Screen Wake Lock API).
-  - *Practicing with the drone:* it keeps playing as you switch trainers, and
-    a header control shows its key and stops it from anywhere. While it
-    sounds, Scales, Scale Degrees, and Ear Training use its key (each says
-    so), and ear-training prompts briefly dip it. Sheet Music
-    and Chord Flashcards change key every round, so the drone pauses there
-    and resumes when you leave; Neck Notes leaves it playing.
+- **Practice Tools** — a metronome and a drone on one page, each with its own
+  play button, so you can run either or both. They keep playing as you
+  switch trainers, and a header control shows what's running and stops it from
+  anywhere. The screen stays on while either plays (where the browser supports
+  the Screen Wake Lock API).
+  - *Metronome:* 30–240 BPM, set with the −/+ buttons, the slider, or by
+    tapping Tap in time. Time signatures are 2/4, 3/4, 4/4, and 6/8 (every
+    eighth note clicks, so BPM counts eighths, with a second pulse on beat
+    four). The downbeat is accented and dots show the beat. It goes quiet
+    during ear-training prompts.
+  - *Drone:* a sustained root + fifth (synthesized) to anchor a key while you
+    practice. Pick the key from the note grid, and it changes live.
+  - *Practicing with the drone:* while it sounds, Scales, Scale Degrees, and
+    Ear Training use its key (each says so), and ear-training prompts briefly
+    dip it. Sheet Music and Chord Flashcards change key every round, so the
+    drone pauses there and resumes when you leave; Neck Notes leaves it
+    playing.
   - *Sounds:* Tanpura, the default (modeled on measurements of a real
     tanpura: Pa, Sa, Sa, low Sa plucked across an 8 s cycle with a little
     human timing variation, soft attacks, long overlapping ring, and a buzz
@@ -163,6 +170,14 @@ Every quiz trainer is built from the same pieces, so cross-cutting changes
   stable keys, with typed codecs (`oneOf`, `booleanCodec`, `jsonCodec`) and
   safe fallbacks when storage is unavailable
 - `hooks/usePlayback.ts`: play-button state for ear-training games
+- `metronome/`: the one app-wide metronome (`MetronomeProvider`,
+  `useMetronome()`). Clicks are generated on the audio thread by an
+  `AudioWorklet` (`click.worklet.ts`), so a busy or hidden page can't delay
+  them. It wraps `clickGenerator.ts`, which places every beat by sample number
+  and has no browser dependencies, so tests check exact sample positions.
+  `display.ts` times the beat dots to when the sound reaches the speakers.
+  `audio.ts` also recovers from interruptions such as phone calls. AudioWorklet
+  needs a secure page, so test on a phone over HTTPS, not a plain LAN address.
 - `drone/`: the one app-wide drone (`DroneProvider`, `useDrone()`), and each
   trainer's `drone` policy in `App.tsx` (`lock` to its key, `pause` it, or
   `free`); locked trainers remount when the drone's key changes so the

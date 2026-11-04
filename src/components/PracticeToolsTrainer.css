@@ -1,0 +1,205 @@
+.tool-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.tool-panel + .tool-panel {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.tool-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.tool-title {
+  align-self: flex-start;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tool-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+/* ---- Metronome ---- */
+
+.bpm-stepper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.bpm-step,
+.tap-btn {
+  flex-shrink: 0;
+  height: 2.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  /* Rapid taps shouldn't zoom the page on phones. */
+  touch-action: manipulation;
+}
+
+.bpm-step {
+  width: 2.75rem;
+  font-size: 1.25rem;
+}
+
+.bpm-step:disabled {
+  opacity: 0.4;
+}
+
+.tap-btn {
+  padding: 0 0.85rem;
+}
+
+.tap-btn:active,
+.bpm-step:active:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (hover: hover) {
+  .tap-btn:hover,
+  .bpm-step:hover:not(:disabled) {
+    border-color: var(--accent);
+  }
+}
+
+.bpm-value {
+  min-width: 3.25rem;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.bpm-value strong {
+  display: block;
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.bpm-value span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
+
+.bpm-slider {
+  width: 100%;
+  height: 1.75rem;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.meter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem 0.9rem;
+  width: 100%;
+}
+
+.beat-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.beat-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.beat-dot.strong {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.beat-dot.medium {
+  width: 0.65rem;
+  height: 0.65rem;
+}
+
+.beat-dot.current {
+  background: var(--accent);
+}
+
+.metronome-failed {
+  margin: 0;
+  color: var(--failure-text);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ---- Drone ---- */
+
+.drone-controls {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.drone-key {
+  font-weight: 600;
+}
+
+.drone-notes {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* Narrow phones: tighten the metronome row so it fits on one line, and center
+   the drone's controls for when the sound picker wraps below its button. */
+@media (max-width: 380px) {
+  .tool-main {
+    gap: 0.4rem;
+  }
+
+  .tool-main .transport-btn {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .bpm-stepper {
+    gap: 0.1rem;
+  }
+
+  .bpm-step {
+    width: 2.25rem;
+  }
+
+  .bpm-value {
+    min-width: 2.6rem;
+  }
+
+  .tap-btn {
+    padding: 0 0.5rem;
+  }
+
+  .drone-controls {
+    justify-content: center;
+  }
+}

@@ -2,13 +2,71 @@
 // Kept generic (sequences, chords) so future ear trainers can reuse it.
 
 import { NOTE_INDEX, type Note } from './theory';
+import clickWorkletUrl from './metronome/click.worklet.ts?worker&url';
+import { createDisplayClock } from './metronome/display';
+import type { BeatMessage, ClickCommand, ClickOptions } from './metronome/clickProtocol';
+import type { Meter } from './metronome/timing';
 
 let ctx: AudioContext | null = null;
 
+function tryResume(audio: AudioContext) {
+  // Stays pending, or fails, until the browser allows it, so just retry later.
+  if (audio.state !== 'running') audio.resume().catch(() => {});
+}
+
 function getCtx(): AudioContext {
-  if (!ctx) ctx = new AudioContext();
-  if (ctx.state === 'suspended') void ctx.resume();
+  if (!ctx) {
+    ctx = new AudioContext();
+    watchForInterruptions(ctx);
+  }
+  tryResume(ctx);
   return ctx;
+}
+
+// ---- Interruptions -------------------------------------------------------
+
+let interrupted = false;
+const interruptionListeners = new Set<() => void>();
+const resumeListeners = new Set<() => void>();
+
+/**
+ * Phone calls, other apps, and locking the screen can suspend audio while
+ * the app still thinks it's playing. Ask for it back as soon as that might
+ * work: right away, on returning to the page, and on the next tap (which
+ * some browsers insist on).
+ */
+function watchForInterruptions(audio: AudioContext) {
+  function retry() {
+    if (!document.hidden) tryResume(audio);
+  }
+
+  // The context starts out suspended, which isn't an interruption.
+  let wasRunning = audio.state === 'running';
+
+  audio.addEventListener('statechange', () => {
+    const running = audio.state === 'running';
+    if (running === wasRunning) return;
+    wasRunning = running;
+    interrupted = !running;
+    for (const listener of interruptionListeners) listener();
+    if (running) for (const listener of resumeListeners) listener();
+    else retry();
+  });
+
+  document.addEventListener('visibilitychange', retry);
+  window.addEventListener('pageshow', retry);
+  window.addEventListener('pointerdown', retry, { capture: true, passive: true });
+}
+
+/** Whether audio was cut off and hasn't come back yet. */
+export function isAudioInterrupted(): boolean {
+  return interrupted;
+}
+
+/** Hear when audio is cut off or comes back. Returns the unsubscribe function. */
+export function subscribeAudioInterrupted(listener: () => void): () => void {
+  interruptionListeners.add(listener);
+  return () => interruptionListeners.delete(listener);
 }
 
 /**
@@ -408,6 +466,153 @@ export function startDrone(root: Note, sound: DroneSound = 'tanpura'): Drone {
       master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), t);
       master.gain.exponentialRampToValueAtTime(0.0001, t + DRONE_FADE_OUT);
       voice.stop(t + DRONE_FADE_OUT + 0.05);
+    },
+  };
+}
+
+// ---- Metronome -----------------------------------------------------------
+
+const METRONOME_GAIN = 0.5;
+const METRONOME_MUTE_FADE = 0.02;
+
+let clickWorklet: Promise<void> | null = null;
+
+/** Undefined `audioWorklet` means an insecure page (it needs HTTPS or localhost). */
+function loadClickWorklet(audio: AudioContext): Promise<void> {
+  if (!audio.audioWorklet) {
+    return Promise.reject(new Error('AudioWorklet is unavailable'));
+  }
+  clickWorklet ??= audio.audioWorklet.addModule(clickWorkletUrl);
+  return clickWorklet;
+}
+
+export interface Metronome {
+  setBpm(bpm: number): void;
+  setMeter(meter: Meter): void;
+  /** Silence the clicks for `seconds` while the beat keeps counting. */
+  mute(seconds: number): void;
+  stop(): void;
+}
+
+export interface MetronomeCallbacks {
+  /** A beat is reaching the speakers now. For visuals; skipped while hidden. */
+  onBeat(beat: number): void;
+  /** The metronome can't run here. */
+  onError(): void;
+}
+
+/**
+ * Start clicking. The clicks are generated on the audio thread, so a busy or
+ * hidden page can't delay them. Call stop() on the result to end it.
+ */
+export function startMetronome(
+  bpm: number,
+  meter: Meter,
+  { onBeat, onError }: MetronomeCallbacks,
+): Metronome {
+  allowPlaybackWhenMuted();
+  const audio = getCtx();
+
+  const master = audio.createGain();
+  master.gain.value = METRONOME_GAIN;
+  master.connect(audio.destination);
+
+  let stopped = false;
+  let node: AudioWorkletNode | null = null;
+  let currentBpm = bpm;
+  let currentMeter = meter;
+
+  function send(command: ClickCommand) {
+    node?.port.postMessage(command);
+  }
+
+  // Beats arrive as they're rendered, slightly before they're heard.
+  const upcoming: { beat: number; at: number }[] = [];
+  const displayClock = createDisplayClock();
+  let frame = 0;
+
+  // Back from an interruption, start again on a clean downbeat rather than
+  // part-way through whatever bar was cut off.
+  const restart = () => {
+    upcoming.length = 0;
+    displayClock.reset();
+    send({ type: 'restart' });
+  };
+  resumeListeners.add(restart);
+
+  function showBeats() {
+    frame = requestAnimationFrame(showBeats);
+    const now = performance.now();
+    displayClock.sample({
+      output: audio.getOutputTimestamp?.(),
+      contextTime: audio.currentTime,
+      latency: (audio.baseLatency ?? 0) + (audio.outputLatency ?? 0),
+      now,
+    });
+    let latest: number | null = null;
+    while (upcoming.length > 0 && upcoming[0].at <= now) {
+      latest = upcoming.shift()!.beat;
+    }
+    if (latest !== null) onBeat(latest);
+  }
+  frame = requestAnimationFrame(showBeats);
+
+  function queueBeat({ beat, frame: beatFrame }: BeatMessage) {
+    if (document.hidden) return;
+    upcoming.push({ beat, at: displayClock.beatTime(beatFrame / audio.sampleRate) });
+  }
+
+  function cleanUp() {
+    stopped = true;
+    resumeListeners.delete(restart);
+    cancelAnimationFrame(frame);
+    upcoming.length = 0;
+    send({ type: 'stop' });
+    node?.disconnect();
+    master.disconnect();
+  }
+
+  loadClickWorklet(audio)
+    .then(() => {
+      if (stopped) return;
+      const processorOptions: ClickOptions = { bpm: currentBpm, meter: currentMeter };
+      node = new AudioWorkletNode(audio, 'click-processor', {
+        numberOfInputs: 0,
+        outputChannelCount: [1],
+        processorOptions,
+      });
+      node.port.onmessage = (event: MessageEvent<BeatMessage>) => queueBeat(event.data);
+      node.connect(master);
+    })
+    .catch(() => {
+      if (stopped) return;
+      cleanUp();
+      onError();
+    });
+
+  return {
+    setBpm(next) {
+      currentBpm = next;
+      send({ type: 'bpm', bpm: next });
+    },
+    setMeter(next) {
+      currentMeter = next;
+      send({ type: 'meter', meter: next });
+    },
+    mute(seconds) {
+      if (stopped) return;
+      const t = audio.currentTime;
+      master.gain.cancelScheduledValues(t);
+      master.gain.setValueAtTime(master.gain.value, t);
+      master.gain.linearRampToValueAtTime(0, t + METRONOME_MUTE_FADE);
+      master.gain.setValueAtTime(0, t + seconds);
+      master.gain.linearRampToValueAtTime(
+        METRONOME_GAIN,
+        t + seconds + METRONOME_MUTE_FADE,
+      );
+    },
+    stop() {
+      if (!stopped) cleanUp();
     },
   };
 }
