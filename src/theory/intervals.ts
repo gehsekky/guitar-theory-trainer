@@ -49,3 +49,9 @@ export function degreeLabel(interval: string): string {
     alt === -2 ? '𝄫' : alt === 2 ? '𝄪' : alt < 0 ? '♭' : alt > 0 ? '♯' : '';
   return accidental + ORDINALS[simple - 1];
 }
+
+/** A degree label short enough for a fretboard dot: "root" → "R",
+ * "♭3rd" → "♭3". */
+export function shortDegree(label: string): string {
+  return label === 'root' ? 'R' : label.replace(/(st|nd|rd|th)$/, '');
+}

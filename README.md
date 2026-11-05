@@ -46,6 +46,9 @@ backend — all logic runs client-side and preferences persist in
     name its quality. Easy is major/minor; hard adds diminished, augmented,
     and five seventh chords (major 7th, dominant 7th, minor 7th,
     half-diminished 7th, diminished 7th).
+- **Fretboard Explorer** — pick a root and a scale or chord to see every place
+  to play it across the neck, with the root highlighted. Dots show note names
+  (spelled for the key) or degrees (R, ♭3, 5). Nothing is graded.
 - **Practice Tools** — a metronome and a drone on one page, each with its own
   play button, so you can run either or both. They keep playing as you
   switch trainers, and a header control shows what's running and stops it from

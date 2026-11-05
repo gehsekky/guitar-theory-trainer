@@ -62,3 +62,24 @@
   stroke: #fff;
   stroke-width: 2;
 }
+
+.fb-note circle {
+  fill: var(--note-tone);
+}
+
+.fb-note text {
+  fill: var(--note-tone-text);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.fb-note.root circle {
+  fill: var(--note-root);
+  stroke: var(--note-root-text);
+  stroke-width: 1.5;
+}
+
+.fb-note.root text {
+  fill: var(--note-root-text);
+}

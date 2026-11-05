@@ -27,3 +27,21 @@ export function noteAt(stringIndex: number, fret: number): Note {
   const open = STRINGS[stringIndex].open;
   return CHROMATIC[(open + fret) % 12];
 }
+
+/** One place to play a note: `tone` is its index in the notes asked for. */
+export interface NotePosition {
+  stringIndex: number;
+  fret: number;
+  tone: number;
+}
+
+/** Everywhere on the neck that `tones` can be played, open strings included. */
+export function notePositions(tones: readonly Note[]): NotePosition[] {
+  return STRINGS.flatMap((_string, stringIndex) =>
+    Array.from({ length: FRET_COUNT + 1 }, (_fret, fret) => ({
+      stringIndex,
+      fret,
+      tone: tones.indexOf(noteAt(stringIndex, fret)),
+    })).filter((position) => position.tone !== -1),
+  );
+}

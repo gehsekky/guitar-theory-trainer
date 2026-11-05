@@ -7,8 +7,15 @@ export interface FretboardMarker {
   fret: number; // 0 = open string
 }
 
+/** A labeled dot, for showing many notes at once. */
+export interface FretboardNote extends FretboardMarker {
+  label: string;
+  root: boolean;
+}
+
 interface FretboardProps {
   marker?: FretboardMarker;
+  notes?: readonly FretboardNote[];
   /** Indices into STRINGS to draw normally; the rest are dimmed. Default: all. */
   activeStrings?: number[];
 }
@@ -41,7 +48,7 @@ function stringY(stringIndex: number): number {
   return TOP + STRING_SPACING * (STRINGS.length - 1 - stringIndex);
 }
 
-export default function Fretboard({ marker, activeStrings }: FretboardProps) {
+export default function Fretboard({ marker, notes, activeStrings }: FretboardProps) {
   const dimmed = (i: number) => activeStrings && !activeStrings.includes(i);
   const scrollRef = useRef<HTMLDivElement>(null);
   const markerX = marker ? fretX(marker.fret) : null;
@@ -166,6 +173,16 @@ export default function Fretboard({ marker, activeStrings }: FretboardProps) {
             >
               {f}
             </text>
+          ))}
+
+          {/* Labeled notes */}
+          {notes?.map(({ stringIndex, fret, label, root }) => (
+            <g key={`${stringIndex}:${fret}`} className={root ? 'fb-note root' : 'fb-note'}>
+              <circle cx={fretX(fret)} cy={stringY(stringIndex)} r={11} />
+              <text x={fretX(fret)} y={stringY(stringIndex) + 3.5}>
+                {label}
+              </text>
+            </g>
           ))}
 
           {/* Marker */}

@@ -6,6 +6,7 @@ import ScaleTrainer from './components/ScaleTrainer';
 import EarTrainer from './components/EarTrainer';
 import ScaleDegreeTrainer from './components/ScaleDegreeTrainer';
 import PracticeToolsTrainer from './components/PracticeToolsTrainer';
+import FretboardExplorer from './components/FretboardExplorer';
 import PracticeIndicator from './components/PracticeIndicator';
 import AudioInterruptedNotice from './components/ui/AudioInterruptedNotice';
 import { useDrone, type DronePolicy } from './drone/DroneContext';
@@ -23,6 +24,7 @@ const TABS = [
   { id: 'scales', label: 'Scales', Trainer: ScaleTrainer, drone: 'lock' },
   { id: 'scale-degrees', label: 'Scale Degrees', Trainer: ScaleDegreeTrainer, drone: 'lock' },
   { id: 'ear-training', label: 'Ear Training', Trainer: EarTrainer, drone: 'lock' },
+  { id: 'fretboard-explorer', label: 'Fretboard Explorer', Trainer: FretboardExplorer, drone: 'free' },
   { id: 'practice-tools', label: 'Practice Tools', Trainer: PracticeToolsTrainer, drone: 'free' },
 ] as const satisfies readonly {
   id: string;

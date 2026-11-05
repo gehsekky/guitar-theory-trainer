@@ -17,6 +17,11 @@
   --failure-text: #a02828;
   --wood: #7a4a26;
   --wood-dark: #5e3719;
+  /* Notes drawn on the wood, which is the same in both themes. */
+  --note-root: #c2410c;
+  --note-root-text: #fff;
+  --note-tone: #f3ead9;
+  --note-tone-text: #2b2620;
 }
 
 @media (prefers-color-scheme: dark) {

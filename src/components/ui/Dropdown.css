@@ -5,6 +5,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  /* A long option sets the select's width; let it shrink on narrow screens. */
+  min-width: 0;
+  max-width: 100%;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -14,6 +17,9 @@
 
 .dropdown-select {
   appearance: none;
+  width: 100%;
+  min-width: 0;
+  text-overflow: ellipsis;
   font: inherit;
   font-size: 1rem;
   font-weight: 600;
@@ -35,6 +41,7 @@
 .dropdown-wrap {
   position: relative;
   display: inline-flex;
+  min-width: 0;
 }
 
 .dropdown-wrap::after {

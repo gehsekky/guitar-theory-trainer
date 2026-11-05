@@ -18,6 +18,8 @@ import {
   STRINGS,
   TRIAD_INTERVALS,
   chordNotes,
+  notePositions,
+  shortDegree,
   diatonicTriad,
   displayNote,
   noteAt,
@@ -70,6 +72,33 @@ describe('fretboard', () => {
       const fret = i === 3 ? 4 : 5;
       expect(noteAt(i, fret)).toBe(STRINGS[i + 1].label);
     }
+  });
+
+  it('finds every place to play a note', () => {
+    expect(notePositions(['E']).filter((p) => p.stringIndex === 0)).toEqual([
+      { stringIndex: 0, fret: 0, tone: 0 },
+      { stringIndex: 0, fret: 12, tone: 0 },
+    ]);
+    // C on each string, low to high: frets 8/20, 3/15, 10/22, 5/17, 1/13, 8/20.
+    expect(notePositions(['C']).map((p) => p.fret)).toEqual([
+      8, 20, 3, 15, 10, 22, 5, 17, 1, 13, 8, 20,
+    ]);
+  });
+
+  it('says which tone each position plays', () => {
+    const tones = ['A', 'C', 'E'] as const;
+    for (const { stringIndex, fret, tone } of notePositions(tones)) {
+      expect(noteAt(stringIndex, fret)).toBe(tones[tone]);
+    }
+    expect(notePositions(tones).map((p) => p.tone)).toEqual(
+      expect.arrayContaining([0, 1, 2]),
+    );
+  });
+
+  it('shortens degree labels to fit a dot', () => {
+    expect(['root', '2nd', '♭3rd', '4th', '♯5th', '𝄫7th'].map(shortDegree)).toEqual([
+      'R', '2', '♭3', '4', '♯5', '𝄫7',
+    ]);
   });
 
   it('has 22 frets', () => {
