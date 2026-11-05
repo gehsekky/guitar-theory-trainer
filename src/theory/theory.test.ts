@@ -13,7 +13,9 @@ import {
   NOTE_INDEX,
   QUALITY_LABEL,
   KEY_TYPES,
+  SCALES,
   SCALE_DEGREES,
+  SCALE_INTERVALS,
   SCALE_STEPS,
   STRINGS,
   TRIAD_INTERVALS,
@@ -247,6 +249,41 @@ describe('scales', () => {
     expect(SCALE_DEGREES.minorPentatonic.join(' ')).toBe('root ♭3rd 4th 5th ♭7th');
     expect(SCALE_STEPS.majorPentatonic).toEqual(['W', 'W', 'W+H', 'W', 'W+H']);
     expect(SCALE_STEPS.minorPentatonic).toEqual(['W+H', 'W', 'W', 'W+H', 'W']);
+  });
+
+  it.each([
+    ['harmonicMinor', 'A B C D E F G#', 'root 2nd ♭3rd 4th 5th ♭6th 7th', 'W H W W H W+H H'],
+    ['minorBlues', 'A C D Eb E G', 'root ♭3rd 4th ♭5th 5th ♭7th', 'W+H W H H W+H W'],
+    ['majorBlues', 'A B C C# E F#', 'root 2nd ♭3rd 3rd 5th 6th', 'W H H W+H W W+H'],
+    ['dorian', 'A B C D E F# G', 'root 2nd ♭3rd 4th 5th 6th ♭7th', 'W H W W W H W'],
+    ['phrygian', 'A Bb C D E F G', 'root ♭2nd ♭3rd 4th 5th ♭6th ♭7th', 'H W W W H W W'],
+    ['lydian', 'A B C# D# E F# G#', 'root 2nd 3rd ♯4th 5th 6th 7th', 'W W W H W W H'],
+    ['mixolydian', 'A B C# D E F# G', 'root 2nd 3rd 4th 5th 6th ♭7th', 'W W H W W H W'],
+    ['locrian', 'A Bb C D Eb F G', 'root ♭2nd ♭3rd 4th ♭5th ♭6th ♭7th', 'H W W H W W W'],
+  ] as const)('%s on A is spelled, labeled, and stepped correctly', (type, notes, degrees, steps) => {
+    expect(spellScale('A', type).join(' ')).toBe(notes);
+    expect(SCALE_DEGREES[type].join(' ')).toBe(degrees);
+    expect(SCALE_STEPS[type].join(' ')).toBe(steps);
+  });
+
+  it('seven-note scales use each letter once, on every root', () => {
+    for (const type of Object.keys(SCALES) as (keyof typeof SCALES)[]) {
+      if (SCALE_DEGREES[type].length !== 7) continue;
+      for (const root of CHROMATIC) {
+        const letters = spellScale(root, type).map((name) => name[0]);
+        expect(new Set(letters).size, `${root} ${type}`).toBe(7);
+      }
+    }
+  });
+
+  it('spelled scales sound the right notes, on every root', () => {
+    for (const type of Object.keys(SCALES) as (keyof typeof SCALES)[]) {
+      for (const root of CHROMATIC) {
+        expect(spellScale(root, type).map(pitchClass), `${root} ${type}`).toEqual(
+          SCALE_INTERVALS[type].map((offset) => transpose(root, offset)),
+        );
+      }
+    }
   });
 
   it('only major and minor are keys with diatonic chords', () => {

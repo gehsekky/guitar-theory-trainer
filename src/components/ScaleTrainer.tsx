@@ -29,6 +29,12 @@ import { useQuiz } from '../hooks/useQuiz';
 import { useDrone } from '../drone/DroneContext';
 import './ScaleTrainer.css';
 
+// The scales this trainer teaches, out of all the app knows.
+type TrainedScale = Extract<
+  ScaleType,
+  'major' | 'minor' | 'majorPentatonic' | 'minorPentatonic'
+>;
+
 type Theme =
   | 'major'
   | 'minor'
@@ -39,7 +45,7 @@ type Theme =
   | 'all';
 
 // Single scales first, then mixes, shown as two groups in the dropdown.
-const THEMES: { value: Theme; label: string; scales: ScaleType[]; mix?: true }[] = [
+const THEMES: { value: Theme; label: string; scales: TrainedScale[]; mix?: true }[] = [
   { value: 'major', label: 'Major', scales: ['major'] },
   { value: 'minor', label: 'Natural minor', scales: ['minor'] },
   { value: 'majorPentatonic', label: 'Major pentatonic', scales: ['majorPentatonic'] },
@@ -59,7 +65,7 @@ const THEMES: { value: Theme; label: string; scales: ScaleType[]; mix?: true }[]
   },
 ];
 
-const SCALE_LABEL: Record<ScaleType, string> = {
+const SCALE_LABEL: Record<TrainedScale, string> = {
   major: 'major',
   minor: 'natural minor',
   majorPentatonic: 'major pentatonic',
@@ -69,10 +75,10 @@ const SCALE_LABEL: Record<ScaleType, string> = {
 
 interface Round {
   root: Note;
-  scaleType: ScaleType;
+  scaleType: TrainedScale;
 }
 
-function scalesFor(theme: Theme): ScaleType[] {
+function scalesFor(theme: Theme): TrainedScale[] {
   return THEMES.find((t) => t.value === theme)!.scales;
 }
 

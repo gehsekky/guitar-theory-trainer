@@ -1,7 +1,7 @@
 // Scales the app teaches. Each entry names a scale in Tonal's dictionary, so
 // spelling and intervals come from Tonal; adding a scale is one entry here.
 // Key scales (major and natural minor) also have a mode, which gives them
-// seven named degrees and diatonic chords; pentatonics are just spelled.
+// seven named degrees and diatonic chords; the rest are just spelled.
 
 import { get as getScale } from '@tonaljs/scale';
 import { semitones } from '@tonaljs/interval';
@@ -22,6 +22,14 @@ export const SCALES = {
   minor: { tonal: 'aeolian', mode: 'aeolian' }, // natural minor
   majorPentatonic: { tonal: 'major pentatonic' },
   minorPentatonic: { tonal: 'minor pentatonic' },
+  harmonicMinor: { tonal: 'harmonic minor' },
+  minorBlues: { tonal: 'minor blues' },
+  majorBlues: { tonal: 'major blues' },
+  dorian: { tonal: 'dorian' },
+  phrygian: { tonal: 'phrygian' },
+  lydian: { tonal: 'lydian' },
+  mixolydian: { tonal: 'mixolydian' },
+  locrian: { tonal: 'locrian' },
 } as const satisfies Record<string, ScaleDef>;
 
 export type ScaleType = keyof typeof SCALES;

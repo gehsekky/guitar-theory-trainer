@@ -23,15 +23,17 @@ import './FretboardExplorer.css';
 /** Something to look at on the neck: a scale or a chord. */
 interface Shape {
   value: string;
-  /** Lowercase, to follow the root: "A minor pentatonic". */
+  /** Written to follow the root: "A minor pentatonic", "A Dorian". */
   name: string;
   spell(root: Note): SpelledNote[];
   degrees: readonly string[];
 }
 
-function scale(type: ScaleType, name: string): Shape {
+// Saved as the last choice, so keep values stable. `id` tells apart two names
+// for one scale (major is also Ionian).
+function scale(type: ScaleType, name: string, id: string = type): Shape {
   return {
-    value: `scale-${type}`,
+    value: `scale-${id}`,
     name,
     spell: (root) => spellScale(root, type),
     degrees: SCALE_DEGREES[type],
@@ -50,14 +52,27 @@ function chord(id: string, type: ChordType): Shape {
 
 const SCALE_SHAPES = [
   scale('major', 'major scale'),
-  scale('minor', 'natural minor scale'),
+  scale('minor', 'natural minor'),
   scale('majorPentatonic', 'major pentatonic'),
   scale('minorPentatonic', 'minor pentatonic'),
+  scale('harmonicMinor', 'harmonic minor'),
+  scale('minorBlues', 'minor blues'),
+  scale('majorBlues', 'major blues'),
+];
+
+const MODE_SHAPES = [
+  scale('major', 'Ionian (major)', 'ionian'),
+  scale('dorian', 'Dorian'),
+  scale('phrygian', 'Phrygian'),
+  scale('lydian', 'Lydian'),
+  scale('mixolydian', 'Mixolydian'),
+  scale('minor', 'Aeolian (natural minor)', 'aeolian'),
+  scale('locrian', 'Locrian'),
 ];
 
 const CHORD_SHAPES = Object.entries(CHORD_TYPES).map(([id, type]) => chord(id, type));
 
-const SHAPES = [...SCALE_SHAPES, ...CHORD_SHAPES];
+const SHAPES = [...SCALE_SHAPES, ...MODE_SHAPES, ...CHORD_SHAPES];
 const SHAPE_VALUES = SHAPES.map((s) => s.value);
 
 function option({ value, name }: Shape) {
@@ -66,6 +81,7 @@ function option({ value, name }: Shape) {
 
 const SHAPE_GROUPS = [
   { label: 'Scales', options: SCALE_SHAPES.map(option) },
+  { label: 'Modes', options: MODE_SHAPES.map(option) },
   { label: 'Chords', options: CHORD_SHAPES.map(option) },
 ];
 
