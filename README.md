@@ -38,6 +38,10 @@ backend — all logic runs client-side and preferences persist in
   lines, and accidentals).
   - *Easy:* key signature drawn and named; quarter notes.
   - *Hard:* key signature only (infer the key) and identify the note duration.
+  - *Key signature:* a signature alone (no note); name its major key, its
+    relative minor, or either at random. The answer comes with the reading
+    rule (the last sharp is a half step below the key; the second-to-last
+    flat is the key) and the relative major or minor.
 - **Scales** — a flashcard shows a root note, scale type, and its step
   pattern (e.g. W–W–H–W–W–W–H); spell the scale by picking its notes in
   order, starting from the root. Order is graded.

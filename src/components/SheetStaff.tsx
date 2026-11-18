@@ -19,12 +19,17 @@ import {
 } from './notationGlyphs';
 import './SheetStaff.css';
 
-interface SheetStaffProps {
-  keyDef: KeyDef;
+export interface StaffNote {
   /** Diatonic step of the note (octave * 7 + letter index). */
   step: number;
   accidental: Accidental;
   duration: Duration;
+}
+
+interface SheetStaffProps {
+  keyDef: KeyDef;
+  /** The note to draw; leave out for a key signature alone. */
+  note?: StaffNote;
 }
 
 // Layout constants
@@ -72,16 +77,7 @@ function ledgerSteps(step: number): number[] {
   return steps.filter((s) => s % 2 === 0);
 }
 
-export default function SheetStaff({
-  keyDef,
-  step,
-  accidental,
-  duration,
-}: SheetStaffProps) {
-  const noteY = yOf(step);
-  const stemUp = step < STEP_B4;
-  const hollow = duration === 'whole' || duration === 'half';
-  const flags = duration === 'eighth' ? 1 : duration === 'sixteenth' ? 2 : 0;
+export default function SheetStaff({ keyDef, note }: SheetStaffProps) {
 
   const sigCount = Math.abs(keyDef.accidentals);
   const sigSteps = (
@@ -89,11 +85,6 @@ export default function SheetStaff({
   ).slice(0, sigCount);
   const sigGlyph = keyDef.accidentals >= 0 ? SHARP : FLAT;
   const sigStep = sigGlyph.width * GLYPH_SCALE + KEY_SIG_GAP;
-
-  // Stem geometry (none for whole notes)
-  const stemX = stemUp ? NOTE_X + 6.5 : NOTE_X - 6.5;
-  const stemY1 = stemUp ? noteY - 2 : noteY + 2;
-  const stemY2 = stemUp ? noteY - STEM_LEN : noteY + STEM_LEN;
 
   return (
     <div className="staff-wrap">
@@ -103,7 +94,7 @@ export default function SheetStaff({
         width={WIDTH}
         height={HEIGHT}
         role="img"
-        aria-label="Musical staff with a note"
+        aria-label={note ? 'Musical staff with a note' : 'Musical staff with a key signature'}
       >
         {/* Staff lines: E4 G4 B4 D5 F5 */}
         {[30, 32, 34, 36, 38].map((s) => (
@@ -135,66 +126,91 @@ export default function SheetStaff({
           />
         ))}
 
-        {/* Ledger lines */}
-        {ledgerSteps(step).map((s) => (
-          <line
-            key={s}
-            x1={NOTE_X - 14}
-            y1={yOf(s)}
-            x2={NOTE_X + 14}
-            y2={yOf(s)}
-            className="staff-line ledger"
-          />
-        ))}
-
-        {/* Note accidental, just left of the note head */}
-        {accidental !== 'none' && (
-          <path
-            d={NOTE_ACCIDENTAL[accidental].path}
-            transform={placeGlyph(
-              NOTE_HEAD_LEFT -
-                ACCIDENTAL_GAP -
-                NOTE_ACCIDENTAL[accidental].width * GLYPH_SCALE,
-              noteY,
-            )}
-            className="staff-accidental"
+        {note && (
+          <StaffNoteMarks
+            step={note.step}
+            accidental={note.accidental}
+            duration={note.duration}
           />
         )}
-
-        {/* Note head */}
-        {duration === 'whole' ? (
-          <ellipse
-            cx={NOTE_X}
-            cy={noteY}
-            rx={8.5}
-            ry={5.5}
-            className="note-head hollow"
-          />
-        ) : (
-          <ellipse
-            cx={NOTE_X}
-            cy={noteY}
-            rx={7.5}
-            ry={5.5}
-            transform={`rotate(-20 ${NOTE_X} ${noteY})`}
-            className={hollow ? 'note-head hollow' : 'note-head'}
-          />
-        )}
-
-        {/* Stem */}
-        {duration !== 'whole' && (
-          <line x1={stemX} y1={stemY1} x2={stemX} y2={stemY2} className="note-stem" />
-        )}
-
-        {/* Flags */}
-        {Array.from({ length: flags }, (_, i) => {
-          const fy = stemUp ? stemY2 + i * 9 : stemY2 - i * 9;
-          const d = stemUp
-            ? `M ${stemX} ${fy} C ${stemX + 3} ${fy + 9}, ${stemX + 12} ${fy + 11}, ${stemX + 8} ${fy + 24}`
-            : `M ${stemX} ${fy} C ${stemX + 3} ${fy - 9}, ${stemX + 12} ${fy - 11}, ${stemX + 8} ${fy - 24}`;
-          return <path key={i} d={d} className="note-flag" />;
-        })}
       </svg>
     </div>
+  );
+}
+
+/** A note with its ledger lines, accidental, stem, and flags. */
+function StaffNoteMarks({ step, accidental, duration }: StaffNote) {
+  const noteY = yOf(step);
+  const stemUp = step < STEP_B4;
+  const hollow = duration === 'whole' || duration === 'half';
+  const flags = duration === 'eighth' ? 1 : duration === 'sixteenth' ? 2 : 0;
+
+  // Stem geometry (none for whole notes)
+  const stemX = stemUp ? NOTE_X + 6.5 : NOTE_X - 6.5;
+  const stemY1 = stemUp ? noteY - 2 : noteY + 2;
+  const stemY2 = stemUp ? noteY - STEM_LEN : noteY + STEM_LEN;
+
+  return (
+    <>
+      {/* Ledger lines */}
+      {ledgerSteps(step).map((s) => (
+        <line
+          key={s}
+          x1={NOTE_X - 14}
+          y1={yOf(s)}
+          x2={NOTE_X + 14}
+          y2={yOf(s)}
+          className="staff-line ledger"
+        />
+      ))}
+
+      {/* Note accidental, just left of the note head */}
+      {accidental !== 'none' && (
+        <path
+          d={NOTE_ACCIDENTAL[accidental].path}
+          transform={placeGlyph(
+            NOTE_HEAD_LEFT -
+              ACCIDENTAL_GAP -
+              NOTE_ACCIDENTAL[accidental].width * GLYPH_SCALE,
+            noteY,
+          )}
+          className="staff-accidental"
+        />
+      )}
+
+      {/* Note head */}
+      {duration === 'whole' ? (
+        <ellipse
+          cx={NOTE_X}
+          cy={noteY}
+          rx={8.5}
+          ry={5.5}
+          className="note-head hollow"
+        />
+      ) : (
+        <ellipse
+          cx={NOTE_X}
+          cy={noteY}
+          rx={7.5}
+          ry={5.5}
+          transform={`rotate(-20 ${NOTE_X} ${noteY})`}
+          className={hollow ? 'note-head hollow' : 'note-head'}
+        />
+      )}
+
+      {/* Stem */}
+      {duration !== 'whole' && (
+        <line x1={stemX} y1={stemY1} x2={stemX} y2={stemY2} className="note-stem" />
+      )}
+
+      {/* Flags */}
+      {Array.from({ length: flags }, (_, i) => {
+        const fy = stemUp ? stemY2 + i * 9 : stemY2 - i * 9;
+        const d = stemUp
+          ? `M ${stemX} ${fy} C ${stemX + 3} ${fy + 9}, ${stemX + 12} ${fy + 11}, ${stemX + 8} ${fy + 24}`
+          : `M ${stemX} ${fy} C ${stemX + 3} ${fy - 9}, ${stemX + 12} ${fy - 11}, ${stemX + 8} ${fy - 24}`;
+        return <path key={i} d={d} className="note-flag" />;
+      })}
+    </>
   );
 }

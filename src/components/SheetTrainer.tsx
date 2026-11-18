@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import KeySignatureQuiz from './KeySignatureQuiz';
 import NotePicker from './NotePicker';
 import SheetStaff from './SheetStaff';
 import QuizActions from './ui/QuizActions';
@@ -25,12 +26,16 @@ import { oneOf, usePersistentState } from '../hooks/usePersistentState';
 import { useQuiz } from '../hooks/useQuiz';
 import './SheetTrainer.css';
 
-type Mode = 'easy' | 'hard';
+type Mode = 'easy' | 'hard' | 'keys';
+/** The modes that read a note (the rest: key signatures alone). */
+type NoteMode = Exclude<Mode, 'keys'>;
 
+// Values are saved settings, so keep them stable.
 const MODES = [
   { value: 'easy', label: 'Easy' },
   { value: 'hard', label: 'Hard' },
-] as const;
+  { value: 'keys', label: 'Key signature' },
+] as const satisfies readonly { value: Mode; label: string }[];
 
 interface Round {
   key: KeyDef;
@@ -46,7 +51,7 @@ interface Round {
 const STEP_MIN = stepOf('C', 4);
 const STEP_MAX = stepOf('C', 6);
 
-function newRound(mode: Mode): Round {
+function newRound(mode: NoteMode): Round {
   const key = pick(KEYS);
   const step = STEP_MIN + randomInt(STEP_MAX - STEP_MIN + 1);
   const letter = letterOfStep(step);
@@ -75,8 +80,27 @@ export default function SheetTrainer() {
   const [mode, setMode] = usePersistentState<Mode>(
     'sheet-mode',
     'easy',
-    oneOf(['easy', 'hard']),
+    oneOf(MODES.map((m) => m.value)),
   );
+
+  return (
+    <section className="trainer">
+      <h2>Sheet Music Trainer</h2>
+
+      <SegmentedControl label="Mode" options={MODES} value={mode} onChange={setMode} />
+
+      {mode === 'keys' ? (
+        <KeySignatureQuiz />
+      ) : (
+        // A new quiz per mode, so switching starts a fresh round.
+        <NoteReadingQuiz key={mode} mode={mode} />
+      )}
+    </section>
+  );
+}
+
+/** Easy and Hard: name a note on the staff (and in Hard, its duration). */
+function NoteReadingQuiz({ mode }: { mode: NoteMode }) {
   const [selected, setSelected] = useState<Note[]>([]);
   const [selectedDuration, setSelectedDuration] = useState<Duration | null>(null);
   const { round, graded, correct, grade, next } = useQuiz(
@@ -90,11 +114,6 @@ export default function SheetTrainer() {
   const needsDuration = mode === 'hard';
   const ready =
     selected.length === 1 && (!needsDuration || selectedDuration !== null);
-
-  function changeMode(nextMode: Mode) {
-    setMode(nextMode);
-    next(newRound(nextMode));
-  }
 
   function submit() {
     const noteRight = selected[0] === round.answer;
@@ -120,16 +139,7 @@ export default function SheetTrainer() {
   );
 
   return (
-    <section className="trainer">
-      <h2>Sheet Music Trainer</h2>
-
-      <SegmentedControl
-        label="Difficulty"
-        options={MODES}
-        value={mode}
-        onChange={changeMode}
-      />
-
+    <>
       <p className="instructions">
         {mode === 'easy'
           ? 'Name the note on the staff. Watch the key signature!'
@@ -138,12 +148,7 @@ export default function SheetTrainer() {
 
       {mode === 'easy' && <div className="key-label">Key: {round.key.name}</div>}
 
-      <SheetStaff
-        keyDef={round.key}
-        step={round.step}
-        accidental={round.accidental}
-        duration={round.duration}
-      />
+      <SheetStaff keyDef={round.key} note={round} />
 
       <NotePicker
         selected={selected}
@@ -195,6 +200,6 @@ export default function SheetTrainer() {
           )}
         </ResultBanner>
       )}
-    </section>
+    </>
   );
 }
