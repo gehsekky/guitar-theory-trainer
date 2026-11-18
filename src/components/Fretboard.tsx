@@ -11,6 +11,8 @@ export interface FretboardMarker {
 export interface FretboardNote extends FretboardMarker {
   label: string;
   root: boolean;
+  /** Marks a graded answer: a right or wrong place. */
+  status?: 'correct' | 'wrong';
 }
 
 interface FretboardProps {
@@ -18,6 +20,10 @@ interface FretboardProps {
   notes?: readonly FretboardNote[];
   /** Indices into STRINGS to draw normally; the rest are dimmed. Default: all. */
   activeStrings?: number[];
+  /** Where to scroll on narrow screens when there is no marker. */
+  focus?: FretboardMarker;
+  /** Makes every string and fret tappable, reporting the position tapped. */
+  onSelect?: (position: FretboardMarker) => void;
 }
 
 // SVG layout constants
@@ -48,10 +54,31 @@ function stringY(stringIndex: number): number {
   return TOP + STRING_SPACING * (STRINGS.length - 1 - stringIndex);
 }
 
-export default function Fretboard({ marker, notes, activeStrings }: FretboardProps) {
+/** The tappable area around a string at a fret: the fret slot, or the space
+ * left of the nut for the open string. */
+function hitArea(fret: number) {
+  const left = fret === 0 ? NUT_X - 32 : NUT_X + FRET_SPACING * (fret - 1);
+  const right = fret === 0 ? NUT_X - 5 : left + FRET_SPACING;
+  return { x: left, width: right - left };
+}
+
+function noteClass(root: boolean, status?: 'correct' | 'wrong') {
+  let cls = root ? 'fb-note root' : 'fb-note';
+  if (status) cls += ` ${status}`;
+  return cls;
+}
+
+export default function Fretboard({
+  marker,
+  notes,
+  activeStrings,
+  focus,
+  onSelect,
+}: FretboardProps) {
   const dimmed = (i: number) => activeStrings && !activeStrings.includes(i);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const markerX = marker ? fretX(marker.fret) : null;
+  const target = marker ?? focus;
+  const markerX = target ? fretX(target.fret) : null;
 
   // When the board is wider than the screen (phones), scroll the marker into
   // the middle of the view. The SVG renders at 1:1, so SVG x is pixel x.
@@ -176,8 +203,8 @@ export default function Fretboard({ marker, notes, activeStrings }: FretboardPro
           ))}
 
           {/* Labeled notes */}
-          {notes?.map(({ stringIndex, fret, label, root }) => (
-            <g key={`${stringIndex}:${fret}`} className={root ? 'fb-note root' : 'fb-note'}>
+          {notes?.map(({ stringIndex, fret, label, root, status }) => (
+            <g key={`${stringIndex}:${fret}`} className={noteClass(root, status)}>
               <circle cx={fretX(fret)} cy={stringY(stringIndex)} r={11} />
               <text x={fretX(fret)} y={stringY(stringIndex) + 3.5}>
                 {label}
@@ -202,6 +229,35 @@ export default function Fretboard({ marker, notes, activeStrings }: FretboardPro
               />
             </g>
           )}
+
+          {/* Tap targets, on top so dots don't block them. */}
+          {onSelect &&
+            STRINGS.map((_s, stringIndex) =>
+              Array.from({ length: FRET_COUNT + 1 }, (_f, fret) => {
+                const select = () => onSelect({ stringIndex, fret });
+                return (
+                  <rect
+                    key={`hit${stringIndex}:${fret}`}
+                    {...hitArea(fret)}
+                    y={stringY(stringIndex) - STRING_SPACING / 2}
+                    height={STRING_SPACING}
+                    className="fb-hit"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`String ${STRINGS.length - stringIndex}, ${
+                      fret === 0 ? 'open' : `fret ${fret}`
+                    }`}
+                    onClick={select}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        select();
+                      }
+                    }}
+                  />
+                );
+              }),
+            )}
         </svg>
       </div>
     </div>

@@ -22,6 +22,9 @@
   --note-root-text: #fff;
   --note-tone: #f3ead9;
   --note-tone-text: #2b2620;
+  /* Graded answers on the wood. */
+  --fb-correct: #2f8a43;
+  --fb-wrong: #c23030;
 }
 
 @media (prefers-color-scheme: dark) {

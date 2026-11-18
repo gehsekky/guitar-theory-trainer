@@ -83,3 +83,37 @@
 .fb-note.root text {
   fill: var(--note-root-text);
 }
+
+.fb-note.correct circle {
+  fill: var(--fb-correct);
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.fb-note.wrong circle {
+  fill: var(--fb-wrong);
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.fb-note.correct text,
+.fb-note.wrong text {
+  fill: #fff;
+}
+
+/* Invisible tap targets over each string and fret. */
+.fb-hit {
+  fill: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.fb-hit:hover {
+  fill: rgb(255 255 255 / 0.12);
+}
+
+.fb-hit:focus-visible {
+  fill: rgb(255 255 255 / 0.18);
+  stroke: #fff;
+  stroke-width: 2;
+}

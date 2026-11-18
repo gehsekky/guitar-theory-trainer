@@ -25,6 +25,8 @@ import {
   diatonicTriad,
   displayNote,
   noteAt,
+  midiAt,
+  positionsOfMidi,
   pitchClass,
   sameNoteOrder,
   sameNoteSet,
@@ -101,6 +103,32 @@ describe('fretboard', () => {
     expect(['root', '2nd', '♭3rd', '4th', '♯5th', '𝄫7th'].map(shortDegree)).toEqual([
       'R', '2', '♭3', '4', '♯5', '𝄫7',
     ]);
+  });
+
+  it('gives each position its exact pitch', () => {
+    expect(midiAt(0, 0)).toBe(40); // low E = E2
+    expect(midiAt(5, 0)).toBe(64); // high E = E4
+    expect(midiAt(1, 3)).toBe(48); // C3
+    // Unison frets: 5th fret matches the next open string (4th for G→B).
+    expect(midiAt(0, 5)).toBe(midiAt(1, 0));
+    expect(midiAt(3, 4)).toBe(midiAt(4, 0));
+  });
+
+  it('finds every place to play an exact pitch', () => {
+    // Middle C (C4) sits on five strings; the high E's lowest note is E4.
+    expect(positionsOfMidi(60)).toEqual([
+      { stringIndex: 0, fret: 20 },
+      { stringIndex: 1, fret: 15 },
+      { stringIndex: 2, fret: 10 },
+      { stringIndex: 3, fret: 5 },
+      { stringIndex: 4, fret: 1 },
+    ]);
+    expect(positionsOfMidi(40)).toEqual([{ stringIndex: 0, fret: 0 }]);
+    expect(positionsOfMidi(39)).toEqual([]); // below the low E
+    expect(positionsOfMidi(64 + FRET_COUNT + 1)).toEqual([]); // past the last fret
+    for (const { stringIndex, fret } of positionsOfMidi(55)) {
+      expect(midiAt(stringIndex, fret)).toBe(55);
+    }
   });
 
   it('has 22 frets', () => {

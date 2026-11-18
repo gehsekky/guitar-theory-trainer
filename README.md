@@ -11,6 +11,16 @@ backend — all logic runs client-side and preferences persist in
   SVG fretboard; name the note.
   - *Strings:* toggle which strings the note can land on — one string for
     single-string drills, any combination, or All. Off strings are dimmed.
+- **Fretboard Intervals** — learn what each interval looks like on the neck.
+  The root is a labeled dot.
+  - *Name it:* a second note is marked within a hand's reach of the root;
+    name the interval.
+  - *Find it:* tap where a named interval above the root is. Any string
+    counts if the pitch is exact (same octave); afterwards every right place
+    is shown, so you see each shape the interval makes, including the shift
+    across the G–B strings.
+  - *Drill:* all intervals, or one family (2nds and 3rds; 4ths, 5ths, and
+    octave; 6ths and 7ths). After each answer you can hear the interval.
 - **Chord Flashcards** — a flashcard shows a root note and chord type; spell
   the chord in root position by picking its notes in order (root, 3rd, 5th,
   and 7th for seventh chords). Order is graded.

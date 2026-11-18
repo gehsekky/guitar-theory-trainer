@@ -1,5 +1,6 @@
 import { useEffect, useState, type ComponentType } from 'react';
 import NeckTrainer from './components/NeckTrainer';
+import FretboardIntervalTrainer from './components/FretboardIntervalTrainer';
 import ChordFlashcardTrainer from './components/ChordFlashcardTrainer';
 import SheetTrainer from './components/SheetTrainer';
 import ScaleTrainer from './components/ScaleTrainer';
@@ -19,6 +20,7 @@ import './App.css';
 // trainers use its key, `pause` trainers silence it while open.
 const TABS = [
   { id: 'neck-notes', label: 'Neck Notes', Trainer: NeckTrainer, drone: 'free' },
+  { id: 'fretboard-intervals', label: 'Fretboard Intervals', Trainer: FretboardIntervalTrainer, drone: 'free' },
   { id: 'chord-flashcards', label: 'Chord Flashcards', Trainer: ChordFlashcardTrainer, drone: 'pause' },
   { id: 'sheet-music', label: 'Sheet Music', Trainer: SheetTrainer, drone: 'pause' },
   { id: 'scales', label: 'Scales', Trainer: ScaleTrainer, drone: 'lock' },
