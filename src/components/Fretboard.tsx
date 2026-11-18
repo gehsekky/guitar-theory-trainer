@@ -11,9 +11,12 @@ export interface FretboardMarker {
 export interface FretboardNote extends FretboardMarker {
   label: string;
   root: boolean;
-  /** Marks a graded answer: a right or wrong place. */
-  status?: 'correct' | 'wrong';
+  /** Marks an answer: picked but not yet graded, or graded as right, wrong,
+   * or a right place that was missed. */
+  status?: FretboardNoteStatus;
 }
+
+export type FretboardNoteStatus = 'selected' | 'correct' | 'wrong' | 'missed';
 
 interface FretboardProps {
   marker?: FretboardMarker;
@@ -62,7 +65,7 @@ function hitArea(fret: number) {
   return { x: left, width: right - left };
 }
 
-function noteClass(root: boolean, status?: 'correct' | 'wrong') {
+function noteClass(root: boolean, status?: FretboardNoteStatus) {
   let cls = root ? 'fb-note root' : 'fb-note';
   if (status) cls += ` ${status}`;
   return cls;

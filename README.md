@@ -7,9 +7,14 @@ backend — all logic runs client-side and preferences persist in
 
 ## Trainers
 
-- **Neck Notes** — a position (open string through fret 22) is marked on an
-  SVG fretboard; name the note.
-  - *Strings:* toggle which strings the note can land on — one string for
+- **Neck Notes** — find your way around the notes on the neck (open string
+  through fret 22).
+  - *Name it:* a position is marked on an SVG fretboard; name the note.
+  - *Find all:* given a note, tap every place it sounds; tap a dot again to
+    take it back. Graded as right only if every place is found with no
+    extras; afterwards right taps show green, wrong ones red, and missed
+    places as dashed dots.
+  - *Strings:* toggle which strings are in play — one string for
     single-string drills, any combination, or All. Off strings are dimmed.
 - **Fretboard Intervals** — learn what each interval looks like on the neck.
   The root is a labeled dot.

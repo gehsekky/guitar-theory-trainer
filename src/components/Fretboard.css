@@ -117,3 +117,22 @@
   stroke: #fff;
   stroke-width: 2;
 }
+
+.fb-note.selected circle {
+  fill: var(--accent);
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+/* A right place the answer left out: hollow, so it reads as "not picked". */
+.fb-note.missed circle {
+  fill: var(--wood-dark);
+  stroke: var(--fb-correct-ring);
+  stroke-width: 2.5;
+  stroke-dasharray: 3 2.5;
+}
+
+.fb-note.selected text,
+.fb-note.missed text {
+  fill: #fff;
+}

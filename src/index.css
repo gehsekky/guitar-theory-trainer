@@ -25,6 +25,7 @@
   /* Graded answers on the wood. */
   --fb-correct: #2f8a43;
   --fb-wrong: #c23030;
+  --fb-correct-ring: #7fdc8f;
 }
 
 @media (prefers-color-scheme: dark) {
