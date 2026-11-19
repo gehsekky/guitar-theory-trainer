@@ -14,6 +14,9 @@ export interface FretboardNote extends FretboardMarker {
   /** Marks an answer: picked but not yet graded, or graded as right, wrong,
    * or a right place that was missed. */
   status?: FretboardNoteStatus;
+  /** Groups dots by color, e.g. the shapes of one triad inversion: draws
+   * the dot's ring in `--fb-tint-<n>`. */
+  tint?: number;
 }
 
 export type FretboardNoteStatus = 'selected' | 'correct' | 'wrong' | 'missed';
@@ -65,9 +68,10 @@ function hitArea(fret: number) {
   return { x: left, width: right - left };
 }
 
-function noteClass(root: boolean, status?: FretboardNoteStatus) {
+function noteClass(root: boolean, status?: FretboardNoteStatus, tint?: number) {
   let cls = root ? 'fb-note root' : 'fb-note';
   if (status) cls += ` ${status}`;
+  if (tint !== undefined) cls += ` tint-${tint}`;
   return cls;
 }
 
@@ -206,8 +210,8 @@ export default function Fretboard({
           ))}
 
           {/* Labeled notes */}
-          {notes?.map(({ stringIndex, fret, label, root, status }) => (
-            <g key={`${stringIndex}:${fret}`} className={noteClass(root, status)}>
+          {notes?.map(({ stringIndex, fret, label, root, status, tint }) => (
+            <g key={`${stringIndex}:${fret}`} className={noteClass(root, status, tint)}>
               <circle cx={fretX(fret)} cy={stringY(stringIndex)} r={11} />
               <text x={fretX(fret)} y={stringY(stringIndex) + 3.5}>
                 {label}

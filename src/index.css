@@ -26,6 +26,10 @@
   --fb-correct: #2f8a43;
   --fb-wrong: #c23030;
   --fb-correct-ring: #7fdc8f;
+  /* Group rings on the wood (e.g. triad inversions), told apart by hue. */
+  --fb-tint-0: #4fa3ff;
+  --fb-tint-1: #3ccf8e;
+  --fb-tint-2: #e868c9;
 }
 
 @media (prefers-color-scheme: dark) {

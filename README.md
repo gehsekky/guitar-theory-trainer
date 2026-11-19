@@ -92,6 +92,10 @@ backend — all logic runs client-side and preferences persist in
   - *Scales:* major, natural and harmonic minor, major and minor pentatonic,
     and major and minor blues.
   - *Modes:* Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, and Locrian.
+  - *Triad shapes:* major, minor, or diminished triads on one string set
+    (E A D, A D G, D G B, G B e), every close-voiced shape up the neck,
+    ringed by inversion and listed with frets and notes. Filter to one
+    inversion to see a single shape type.
 - **Practice Tools** — a metronome and a drone on one page, each with its own
   play button, so you can run either or both. They keep playing as you
   switch trainers, and a header control shows what's running and stops it from

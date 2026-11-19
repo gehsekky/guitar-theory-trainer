@@ -136,3 +136,20 @@
 .fb-note.missed text {
   fill: #fff;
 }
+
+/* Tinted groups (e.g. triad inversions): a thick colored ring. */
+.fb-note[class*='tint-'] circle {
+  stroke-width: 3;
+}
+
+.fb-note.tint-0 circle {
+  stroke: var(--fb-tint-0);
+}
+
+.fb-note.tint-1 circle {
+  stroke: var(--fb-tint-1);
+}
+
+.fb-note.tint-2 circle {
+  stroke: var(--fb-tint-2);
+}

@@ -55,3 +55,65 @@
     font-size: 1rem;
   }
 }
+
+/* Triad shapes, low to high on the neck, colored like their rings. */
+.triad-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.4rem 1rem;
+  width: 100%;
+  max-width: 44rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.triad-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    'swatch inversion'
+    'swatch detail';
+  align-items: center;
+  column-gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.triad-swatch {
+  grid-area: swatch;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+  border: 3px solid;
+}
+
+.triad-item.tint-0 .triad-swatch {
+  border-color: var(--fb-tint-0);
+}
+
+.triad-item.tint-1 .triad-swatch {
+  border-color: var(--fb-tint-1);
+}
+
+.triad-item.tint-2 .triad-swatch {
+  border-color: var(--fb-tint-2);
+}
+
+.triad-inversion {
+  grid-area: inversion;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.triad-inversion::first-letter {
+  text-transform: uppercase;
+}
+
+.triad-detail {
+  grid-area: detail;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}

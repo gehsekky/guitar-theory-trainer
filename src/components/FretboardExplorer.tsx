@@ -1,32 +1,41 @@
-import Fretboard from './Fretboard';
+import Fretboard, { type FretboardNote } from './Fretboard';
 import NotePicker from './NotePicker';
 import Dropdown from './ui/Dropdown';
 import SegmentedControl from './ui/SegmentedControl';
 import {
   CHORD_TYPES,
   CHROMATIC,
+  INVERSIONS,
+  INVERSION_NAMES,
   SCALE_DEGREES,
+  STRING_SETS,
+  TRIAD_TYPES,
   formatNote,
   notePositions,
   pitchClass,
   shortDegree,
   spellChord,
   spellScale,
+  triadShapes,
   type ChordType,
+  type Inversion,
   type Note,
   type ScaleType,
   type SpelledNote,
+  type TriadQuality,
 } from '../theory';
 import { oneOf, usePersistentState } from '../hooks/usePersistentState';
 import './FretboardExplorer.css';
 
-/** Something to look at on the neck: a scale or a chord. */
+/** Something to look at on the neck: a scale, a chord, or a triad's shapes. */
 interface Shape {
   value: string;
   /** Written to follow the root: "A minor pentatonic", "A Dorian". */
   name: string;
   spell(root: Note): SpelledNote[];
   degrees: readonly string[];
+  /** Set for triad shapes: shown one string set at a time, by inversion. */
+  triad?: TriadQuality;
 }
 
 // Saved as the last choice, so keep values stable. `id` tells apart two names
@@ -72,7 +81,17 @@ const MODE_SHAPES = [
 
 const CHORD_SHAPES = Object.entries(CHORD_TYPES).map(([id, type]) => chord(id, type));
 
-const SHAPES = [...SCALE_SHAPES, ...MODE_SHAPES, ...CHORD_SHAPES];
+const TRIAD_SHAPES = (Object.keys(TRIAD_TYPES) as TriadQuality[]).map(
+  (quality): Shape => ({
+    value: `triad-${quality}`,
+    name: `${TRIAD_TYPES[quality].name} triad shapes`,
+    spell: (root) => spellChord(root, TRIAD_TYPES[quality]),
+    degrees: TRIAD_TYPES[quality].degrees,
+    triad: quality,
+  }),
+);
+
+const SHAPES = [...SCALE_SHAPES, ...MODE_SHAPES, ...CHORD_SHAPES, ...TRIAD_SHAPES];
 const SHAPE_VALUES = SHAPES.map((s) => s.value);
 
 function option({ value, name }: Shape) {
@@ -83,7 +102,19 @@ const SHAPE_GROUPS = [
   { label: 'Scales', options: SCALE_SHAPES.map(option) },
   { label: 'Modes', options: MODE_SHAPES.map(option) },
   { label: 'Chords', options: CHORD_SHAPES.map(option) },
+  { label: 'Triad shapes', options: TRIAD_SHAPES.map(option) },
 ];
+
+const SET_OPTIONS = STRING_SETS.map((set, i) => ({ value: String(i), label: set.name }));
+
+type InversionFilter = 'all' | `${Inversion}`;
+
+const INVERSION_FILTERS = [
+  { value: 'all', label: 'All' },
+  { value: '0', label: 'Root' },
+  { value: '1', label: '1st' },
+  { value: '2', label: '2nd' },
+] as const satisfies readonly { value: InversionFilter; label: string }[];
 
 type LabelMode = 'notes' | 'degrees';
 
@@ -105,17 +136,48 @@ export default function FretboardExplorer() {
     oneOf(LABEL_MODES.map((m) => m.value)),
   );
 
+  const [setValue, setSetValue] = usePersistentState(
+    'explorer-triad-set',
+    '2', // D G B: the set most players learn triads on first
+    oneOf(SET_OPTIONS.map((o) => o.value)),
+  );
+  const [inversionFilter, setInversionFilter] = usePersistentState<InversionFilter>(
+    'explorer-triad-inversion',
+    'all',
+    oneOf(INVERSION_FILTERS.map((f) => f.value)),
+  );
+
   const shape = SHAPES.find((s) => s.value === shapeValue)!;
   const spelled = shape.spell(root);
   const noteNames = spelled.map(formatNote);
   const degrees = shape.degrees.map(shortDegree);
   const labels = labelMode === 'notes' ? noteNames : degrees;
 
-  const notes = notePositions(spelled.map(pitchClass)).map(({ tone, ...position }) => ({
-    ...position,
-    label: labels[tone],
-    root: tone === 0,
-  }));
+  // Triad shapes: every shape on the chosen string set, ringed by inversion,
+  // low on the neck first.
+  const set = STRING_SETS[Number(setValue)];
+  const triads = shape.triad
+    ? INVERSIONS.filter((inv) => inversionFilter === 'all' || String(inv) === inversionFilter)
+        .flatMap((inversion) =>
+          triadShapes(root, shape.triad!, inversion, set).map((s) => ({ ...s, inversion })),
+        )
+        .sort((a, b) => a.positions[0].fret - b.positions[0].fret)
+    : [];
+
+  const notes: FretboardNote[] = shape.triad
+    ? triads.flatMap(({ positions, tones, inversion }) =>
+        positions.map((position, i) => ({
+          ...position,
+          label: labels[tones[i]],
+          root: tones[i] === 0,
+          tint: inversion,
+        })),
+      )
+    : notePositions(spelled.map(pitchClass)).map(({ tone, ...position }) => ({
+        ...position,
+        label: labels[tone],
+        root: tone === 0,
+      }));
 
   function changeRoot(selected: Note[]) {
     // Tapping the current root would deselect it; keep one chosen.
@@ -156,7 +218,42 @@ export default function FretboardExplorer() {
         </ol>
       </div>
 
-      <Fretboard notes={notes} />
+      {shape.triad && (
+        <div className="toggle-row">
+          <SegmentedControl
+            label="String set"
+            options={SET_OPTIONS}
+            value={setValue}
+            onChange={setSetValue}
+          />
+          <SegmentedControl
+            label="Inversion"
+            options={INVERSION_FILTERS}
+            value={inversionFilter}
+            onChange={setInversionFilter}
+          />
+        </div>
+      )}
+
+      <Fretboard
+        notes={notes}
+        activeStrings={shape.triad ? [...set.strings] : undefined}
+      />
+
+      {shape.triad && (
+        <ol className="triad-list" aria-label="Triad shapes, low to high on the neck">
+          {triads.map(({ positions, tones, inversion }) => (
+            <li key={positions.map((p) => p.fret).join('-')} className={`triad-item tint-${inversion}`}>
+              <span className="triad-swatch" aria-hidden="true" />
+              <span className="triad-inversion">{INVERSION_NAMES[inversion]}</span>
+              <span className="triad-detail">
+                frets {positions.map((p) => p.fret).join('–')} ·{' '}
+                {tones.map((t) => noteNames[t]).join(' ')}
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
 
       <NotePicker selected={[root]} max={1} onChange={changeRoot} />
     </section>
