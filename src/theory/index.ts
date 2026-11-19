@@ -12,3 +12,4 @@ export * from './spelling';
 export * from './keys';
 export * from './notation';
 export * from './voicing';
+export * from './triads';

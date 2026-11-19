@@ -1,6 +1,7 @@
 import { useEffect, useState, type ComponentType } from 'react';
 import NeckTrainer from './components/NeckTrainer';
 import FretboardIntervalTrainer from './components/FretboardIntervalTrainer';
+import TriadTrainer from './components/TriadTrainer';
 import ChordFlashcardTrainer from './components/ChordFlashcardTrainer';
 import SheetTrainer from './components/SheetTrainer';
 import ScaleTrainer from './components/ScaleTrainer';
@@ -21,6 +22,7 @@ import './App.css';
 const TABS = [
   { id: 'neck-notes', label: 'Neck Notes', Trainer: NeckTrainer, drone: 'free' },
   { id: 'fretboard-intervals', label: 'Fretboard Intervals', Trainer: FretboardIntervalTrainer, drone: 'free' },
+  { id: 'triads', label: 'Triads', Trainer: TriadTrainer, drone: 'free' },
   { id: 'chord-flashcards', label: 'Chord Flashcards', Trainer: ChordFlashcardTrainer, drone: 'pause' },
   { id: 'sheet-music', label: 'Sheet Music', Trainer: SheetTrainer, drone: 'pause' },
   { id: 'scales', label: 'Scales', Trainer: ScaleTrainer, drone: 'lock' },

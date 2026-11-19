@@ -26,6 +26,16 @@ backend — all logic runs client-side and preferences persist in
     across the G–B strings.
   - *Drill:* all intervals, or one family (2nds and 3rds; 4ths, 5ths, and
     octave; 6ths and 7ths). After each answer you can hear the interval.
+- **Triads** — a triad shape is marked on three adjacent strings; name its
+  root, quality, and inversion (root position, 1st, or 2nd). Each part is
+  graded, and the dots are then labeled R, 3, 5.
+  - *Strings:* drill any of the four string sets (E A D, A D G, D G B,
+    G B e) or All.
+  - *Qualities:* major and minor, or add diminished. Augmented is left out:
+    its inversions are themselves augmented triads on other roots.
+  - Shapes come from `src/theory/triads.ts`: every close-voiced triad that
+    fits within four frets, so each root, quality, and inversion appears on
+    every string set.
 - **Chord Flashcards** — a flashcard shows a root note and chord type; spell
   the chord in root position by picking its notes in order (root, 3rd, 5th,
   and 7th for seventh chords). Order is graded.

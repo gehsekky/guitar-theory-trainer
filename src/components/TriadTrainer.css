@@ -1,0 +1,14 @@
+/* Five equal buttons (four string sets + All) that share one row. */
+.chip-row.triad-set-row {
+  flex-wrap: nowrap;
+  width: min(100%, 26rem);
+  gap: 0.3rem;
+}
+
+.triad-set-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.2rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
