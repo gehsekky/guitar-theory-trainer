@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { stopPhrase } from '../audio';
 import { useDrone } from '../drone/DroneContext';
 import { useMetronome } from '../metronome/MetronomeContext';
 
@@ -14,7 +15,14 @@ export function usePlayback() {
   const drone = useDrone();
   const metronome = useMetronome();
 
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  // Leaving the game (another tab or game) silences its prompt.
+  useEffect(
+    () => () => {
+      window.clearTimeout(timer.current);
+      stopPhrase();
+    },
+    [],
+  );
 
   /** Record that audio started and will play for `seconds`. A running drone
    * dips underneath and the metronome goes quiet, so the prompt stays clear. */
@@ -27,8 +35,10 @@ export function usePlayback() {
     timer.current = window.setTimeout(() => setIsPlaying(false), seconds * 1000);
   }
 
-  /** Back to "not heard yet", e.g. after a settings change. */
+  /** Back to "not heard yet", e.g. after a settings change. Stops a prompt
+   * still playing, which no longer matches the round. */
   function reset() {
+    stopPhrase();
     window.clearTimeout(timer.current);
     setHasPlayed(false);
     setIsPlaying(false);

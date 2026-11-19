@@ -59,6 +59,8 @@ backend — all logic runs client-side and preferences persist in
   - After each answer, a note explains that degree's harmonic role.
 - **Ear Training** — tones are synthesized with the Web Audio API. The key can
   be random each round or fixed to a chosen note; all three games share it.
+  Starting a prompt cuts off one still playing, and leaving a game or
+  changing its settings silences it.
   - *Intervals:* hear a tonic, then a second note, then both together, and
     name the interval (minor 2nd through octave).
   - *Chords:* hear a chord note by note (low to high), then all together, and

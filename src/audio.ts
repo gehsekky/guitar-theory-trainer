@@ -116,14 +116,16 @@ function toneWave(audio: AudioContext): PeriodicWave {
   return wave;
 }
 
-/** Schedule a single sustained tone. It finishes fading RELEASE s after `duration`. */
+/** Schedule a single sustained tone into `out`. It finishes fading RELEASE s
+ * after `duration`. Returns the oscillator, so it can be stopped early. */
 function scheduleTone(
   audio: AudioContext,
+  out: AudioNode,
   midi: number,
   start: number,
   duration: number,
   peak = PEAK_GAIN,
-) {
+): OscillatorNode {
   const osc = audio.createOscillator();
   const gain = audio.createGain();
   osc.setPeriodicWave(toneWave(audio));
@@ -136,9 +138,10 @@ function scheduleTone(
   gain.gain.setValueAtTime(peak * SUSTAIN, end);
   gain.gain.linearRampToValueAtTime(0, end + RELEASE);
 
-  osc.connect(gain).connect(audio.destination);
+  osc.connect(gain).connect(out);
   osc.start(start);
   osc.stop(end + RELEASE + 0.05);
+  return osc;
 }
 
 /** One step of a phrase: notes that sound together, and for how long. */
@@ -149,23 +152,69 @@ export interface PhraseStep {
   gains?: number[];
 }
 
+// How fast a cut-off phrase fades: quick, but not an instant drop, which
+// would click.
+const CUT_FADE = 0.03;
+
+/** The phrase now sounding: its own output, and its tones. */
+interface Phrase {
+  out: GainNode;
+  tones: OscillatorNode[];
+}
+
+let currentPhrase: Phrase | null = null;
+
+/** Fade out and stop the phrase now sounding, if any. */
+export function stopPhrase() {
+  if (!currentPhrase || !ctx) return;
+  const { out, tones } = currentPhrase;
+  currentPhrase = null;
+  const now = ctx.currentTime;
+  out.gain.cancelScheduledValues(now);
+  out.gain.setValueAtTime(out.gain.value, now);
+  out.gain.linearRampToValueAtTime(0, now + CUT_FADE);
+  for (const osc of tones) {
+    try {
+      osc.stop(now + CUT_FADE + 0.01);
+    } catch {
+      // Already stopped.
+    }
+  }
+}
+
 /**
  * Play steps one after another, `gap` seconds apart; each step's notes sound
  * together. Returns the total duration in seconds (for UI "is playing" state).
+ *
+ * Only one phrase plays at a time: starting one cuts off the last, so a
+ * quick Next or Play Again never stacks two prompts.
  */
 export function playMidiPhrase(steps: PhraseStep[], gap = 0.3): number {
   const audio = getCtx();
+  stopPhrase();
+  const out = audio.createGain();
+  out.connect(audio.destination);
+  const phrase: Phrase = { out, tones: [] };
+  currentPhrase = phrase;
+
   let t = audio.currentTime + 0.05;
   const t0 = t;
   steps.forEach(({ midis, duration, gains }, i) => {
     // Scale each voice so stacked notes stay clear of clipping.
     const peak = PEAK_GAIN / Math.sqrt(midis.length);
     midis.forEach((midi, j) => {
-      scheduleTone(audio, midi, t, duration, peak * (gains?.[j] ?? 1));
+      phrase.tones.push(scheduleTone(audio, out, midi, t, duration, peak * (gains?.[j] ?? 1)));
     });
     t += duration + (i < steps.length - 1 ? gap : 0);
   });
-  return t - t0 + RELEASE;
+  const total = t - t0 + RELEASE;
+
+  // Once the last tone is done, let the phrase go.
+  phrase.tones.at(-1)?.addEventListener('ended', () => {
+    out.disconnect();
+    if (currentPhrase === phrase) currentPhrase = null;
+  });
+  return total;
 }
 
 // ---- Drone ---------------------------------------------------------------
