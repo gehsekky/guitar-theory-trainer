@@ -38,7 +38,7 @@ backend — all logic runs client-side and preferences persist in
   lines, and accidentals).
   - *Easy:* key signature drawn and named; quarter notes.
   - *Hard:* key signature only (infer the key) and identify the note duration.
-  - *Key signature:* a signature alone (no note); name its major key, its
+  - *Keys:* a key signature alone (no note); name its major key, its
     relative minor, or either at random. The answer comes with the reading
     rule (the last sharp is a half step below the key; the second-to-last
     flat is the key) and the relative major or minor.
@@ -58,7 +58,7 @@ backend — all logic runs client-side and preferences persist in
   - *Numeral:* given a chord, pick its Roman numeral.
   - After each answer, a note explains that degree's harmonic role.
 - **Ear Training** — tones are synthesized with the Web Audio API. The key can
-  be random each round or fixed to a chosen note; all three games share it.
+  be random each round or fixed to a chosen note; every game shares it.
   Starting a prompt cuts off one still playing, and leaving a game or
   changing its settings silences it.
   - *Intervals:* hear a tonic, then a second note, then both together, and
@@ -71,6 +71,10 @@ backend — all logic runs client-side and preferences persist in
     name chords 2–4 by Roman numeral (tap a filled slot to redo from
     there). Chords: I IV V, + ii vi, or + iii. Each chord has the root in
     the bass and the upper voices kept close, so changes move smoothly.
+  - *Degrees:* functional ear training. A I–IV–V–I cadence sets the key,
+    then one note plays; name its scale degree. Notes: 1 3 5, the major
+    scale, or all 12 (adding ♭2, ♭3, ♯4, ♭6, ♭7). *Note again* replays just
+    the note.
 - **Fretboard Explorer** — pick a root and a scale, mode, or chord to see every
   place to play it across the neck, with the root highlighted. Dots show note
   names (spelled for the key) or degrees (R, ♭3, 5). Nothing is graded.

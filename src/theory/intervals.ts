@@ -35,7 +35,13 @@ export const INTERVALS: Interval[] = [
 
 /** The note an interval above a spelled tonic: B♭ + major 3rd → D. */
 export function spellInterval(tonic: SpelledNote, interval: Interval): SpelledNote {
-  return transpose(tonic, interval.tonal);
+  return spellAbove(tonic, interval.tonal);
+}
+
+/** The note a Tonal interval name above a spelled tonic: ("Bb", "3M") → D;
+ * "1P" is the tonic itself. */
+export function spellAbove(tonic: SpelledNote, tonalInterval: string): SpelledNote {
+  return transpose(tonic, tonalInterval);
 }
 
 const ORDINALS = ['root', '2nd', '3rd', '4th', '5th', '6th', '7th'];

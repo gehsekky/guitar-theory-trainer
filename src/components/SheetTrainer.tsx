@@ -34,7 +34,7 @@ type NoteMode = Exclude<Mode, 'keys'>;
 const MODES = [
   { value: 'easy', label: 'Easy' },
   { value: 'hard', label: 'Hard' },
-  { value: 'keys', label: 'Key signature' },
+  { value: 'keys', label: 'Keys' },
 ] as const satisfies readonly { value: Mode; label: string }[];
 
 interface Round {

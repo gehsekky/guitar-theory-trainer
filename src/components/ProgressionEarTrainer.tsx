@@ -4,15 +4,8 @@ import PlayButton from './ui/PlayButton';
 import QuizActions from './ui/QuizActions';
 import ResultBanner from './ui/ResultBanner';
 import SegmentedControl from './ui/SegmentedControl';
-import {
-  DIATONIC,
-  diatonicChordName,
-  diatonicTriad,
-  formatNote,
-  keyTonic,
-  voiceTriad,
-  type Note,
-} from '../theory';
+import { majorChordSteps } from './chordPhrase';
+import { DIATONIC, diatonicChordName, formatNote, keyTonic, type Note } from '../theory';
 import { pick, randomNote } from '../random';
 import { oneOf, usePersistentState } from '../hooks/usePersistentState';
 import { usePlayback } from '../hooks/usePlayback';
@@ -31,10 +24,6 @@ const POOLS = [
 ] as const satisfies readonly { value: Pool; label: string; degrees: readonly number[] }[];
 
 const LENGTH = 4;
-// Loudness of the bass, then the three upper voices. The bass names each
-// chord, so it leads; the upper voices, often an inversion, sit back. The
-// total stays about that of four equal voices, so it can't clip.
-const BASS_LED = [1.5, 0.75, 0.75, 0.75];
 const NUMERALS = DIATONIC.major.map((c) => c.numeral);
 
 interface Round {
@@ -79,11 +68,7 @@ export default function ProgressionEarTrainer({ fixedKey }: ProgressionEarTraine
 
   function play(r: Round = round) {
     const seconds = playMidiPhrase(
-      r.degrees.map((degree) => ({
-        midis: voiceTriad(diatonicTriad(r.tonic, 'major', degree)),
-        duration: 1.1,
-        gains: BASS_LED,
-      })),
+      majorChordSteps(r.tonic, r.degrees, 1.1),
       0.12,
     );
     playback.started(seconds);

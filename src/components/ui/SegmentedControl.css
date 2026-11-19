@@ -7,6 +7,7 @@
 
 .mode-btn {
   padding: 0.4rem 1.5rem;
+  white-space: nowrap;
   border: none;
   background: var(--surface);
   color: var(--text);
@@ -27,5 +28,18 @@
 
   .mode-btn {
     padding: 0.4rem clamp(0.4rem, 3.5vw - 0.4rem, 0.9rem);
+  }
+
+  /* Too many options for one row: two per row, in a rounded box. */
+  .mode-toggle.wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-radius: 12px;
+    width: min(100%, 20rem);
+  }
+
+  .mode-toggle.wrap .mode-btn {
+    min-width: 0;
+    padding-inline: 0.25rem;
   }
 }

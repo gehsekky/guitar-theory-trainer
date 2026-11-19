@@ -12,6 +12,9 @@ interface SegmentedControlProps<T extends string> {
   value: T;
   /** Called only when the selection actually changes. */
   onChange: (value: T) => void;
+  /** On phones, lay the options out two per row instead of one long pill,
+   * for sets too wide to fit across. */
+  wrap?: boolean;
 }
 
 /** A row of mutually exclusive buttons (Easy | Hard), as a radio group. */
@@ -20,9 +23,14 @@ export default function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
+  wrap = false,
 }: SegmentedControlProps<T>) {
   return (
-    <div className="mode-toggle" role="radiogroup" aria-label={label}>
+    <div
+      className={wrap ? 'mode-toggle wrap' : 'mode-toggle'}
+      role="radiogroup"
+      aria-label={label}
+    >
       {options.map((option) => (
         <button
           key={option.value}
