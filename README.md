@@ -58,13 +58,17 @@ backend — all logic runs client-side and preferences persist in
   - *Numeral:* given a chord, pick its Roman numeral.
   - After each answer, a note explains that degree's harmonic role.
 - **Ear Training** — tones are synthesized with the Web Audio API. The key can
-  be random each round or fixed to a chosen note; both games share it.
+  be random each round or fixed to a chosen note; all three games share it.
   - *Intervals:* hear a tonic, then a second note, then both together, and
     name the interval (minor 2nd through octave).
   - *Chords:* hear a chord note by note (low to high), then all together, and
     name its quality. Easy is major/minor; hard adds diminished, augmented,
     and five seventh chords (major 7th, dominant 7th, minor 7th,
     half-diminished 7th, diminished 7th).
+  - *Progressions:* hear four chords in a major key, starting on I, and
+    name chords 2–4 by Roman numeral (tap a filled slot to redo from
+    there). Chords: I IV V, + ii vi, or + iii. Each chord has the root in
+    the bass and the upper voices kept close, so changes move smoothly.
 - **Fretboard Explorer** — pick a root and a scale, mode, or chord to see every
   place to play it across the neck, with the root highlighted. Dots show note
   names (spelled for the key) or degrees (R, ♭3, 5). Nothing is graded.

@@ -1,0 +1,24 @@
+.progression-slots {
+  gap: 0.5rem;
+}
+
+.progression-slot,
+.progression-given {
+  min-width: 3.5rem;
+  font-family: inherit;
+}
+
+/* The first chord is given (always I), so it reads as settled, not asked. */
+.progression-given {
+  color: var(--muted);
+}
+
+.progression-slot:not(:disabled) {
+  cursor: pointer;
+  color: var(--text);
+}
+
+.numeral-chip {
+  min-width: 3.5rem;
+  font-family: Georgia, 'Times New Roman', serif;
+}

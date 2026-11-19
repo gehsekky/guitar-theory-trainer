@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import IntervalTrainer from './IntervalTrainer';
 import ChordEarTrainer from './ChordEarTrainer';
+import ProgressionEarTrainer from './ProgressionEarTrainer';
 import SegmentedControl from './ui/SegmentedControl';
 import DroneKeyNotice from './ui/DroneKeyNotice';
 import { CHROMATIC, displayNote, type Note } from '../theory';
@@ -9,12 +10,13 @@ import { useDrone } from '../drone/DroneContext';
 import './EarTrainer.css';
 
 // Sub-trainers within Ear Training. Future: 'note' (identify a played
-// single note) slots in here alongside intervals and chords.
-type EarGame = 'interval' | 'chord';
+// single note) slots in here alongside the others.
+type EarGame = 'interval' | 'chord' | 'progression';
 
 const GAMES = [
   { value: 'interval', label: 'Intervals' },
   { value: 'chord', label: 'Chords' },
+  { value: 'progression', label: 'Progressions' },
 ] as const;
 
 // Key selection is shared ear-trainer config: either a new random key
@@ -94,6 +96,12 @@ export default function EarTrainer() {
       )}
       {game === 'chord' && (
         <ChordEarTrainer
+          key={activeFixedKey ?? 'random'}
+          fixedKey={activeFixedKey}
+        />
+      )}
+      {game === 'progression' && (
+        <ProgressionEarTrainer
           key={activeFixedKey ?? 'random'}
           fixedKey={activeFixedKey}
         />

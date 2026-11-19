@@ -145,6 +145,8 @@ function scheduleTone(
 export interface PhraseStep {
   midis: number[];
   duration: number;
+  /** Relative loudness of each note (default 1), e.g. to bring out a bass. */
+  gains?: number[];
 }
 
 /**
@@ -155,10 +157,12 @@ export function playMidiPhrase(steps: PhraseStep[], gap = 0.3): number {
   const audio = getCtx();
   let t = audio.currentTime + 0.05;
   const t0 = t;
-  steps.forEach(({ midis, duration }, i) => {
+  steps.forEach(({ midis, duration, gains }, i) => {
     // Scale each voice so stacked notes stay clear of clipping.
     const peak = PEAK_GAIN / Math.sqrt(midis.length);
-    for (const midi of midis) scheduleTone(audio, midi, t, duration, peak);
+    midis.forEach((midi, j) => {
+      scheduleTone(audio, midi, t, duration, peak * (gains?.[j] ?? 1));
+    });
     t += duration + (i < steps.length - 1 ? gap : 0);
   });
   return t - t0 + RELEASE;

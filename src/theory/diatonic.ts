@@ -7,7 +7,7 @@ import { triads } from '@tonaljs/mode';
 import { KEY_TYPES, scaleNotes, spellScale, SCALES, type KeyType } from './scales';
 import type { Quality } from './chords';
 import type { Note } from './pitch';
-import type { SpelledNote } from './spelling';
+import { formatNote, type SpelledNote } from './spelling';
 
 export interface DiatonicChord {
   numeral: string;
@@ -64,4 +64,18 @@ export function spellDiatonicTriad(
   const notes = spellScale(root, type);
   const at = (i: number) => notes[(degree + i) % notes.length];
   return [at(0), at(2), at(4)];
+}
+
+const QUALITY_SUFFIX: Record<Quality, string> = {
+  major: '',
+  minor: 'm',
+  diminished: '°',
+  augmented: '+',
+};
+
+/** The diatonic triad on a scale degree as a chord symbol: ii of C → "Dm",
+ * IV of F → "B♭", vii° of C → "B°". */
+export function diatonicChordName(root: Note, type: KeyType, degree: number): string {
+  const [chordRoot] = spellDiatonicTriad(root, type, degree);
+  return formatNote(chordRoot) + QUALITY_SUFFIX[DIATONIC[type][degree].quality];
 }
