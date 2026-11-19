@@ -74,7 +74,8 @@ backend — all logic runs client-side and preferences persist in
   - *Degrees:* functional ear training. A I–IV–V–I cadence sets the key,
     then one note plays; name its scale degree. Notes: 1 3 5, the major
     scale, or all 12 (adding ♭2, ♭3, ♯4, ♭6, ♭7). *Note again* replays just
-    the note.
+    the note. After each answer the note resolves stepwise along the major
+    scale to the nearer tonic (6 → 7 → 1, ♭3 → 2 → 1), so its pull is heard.
 - **Fretboard Explorer** — pick a root and a scale, mode, or chord to see every
   place to play it across the neck, with the root highlighted. Dots show note
   names (spelled for the key) or degrees (R, ♭3, 5). Nothing is graded.

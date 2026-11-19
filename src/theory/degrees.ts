@@ -50,3 +50,26 @@ export const DEGREE_INFO: Record<KeyType, string[]> = {
     'A whole step below the tonic, so it lacks the sharp upward pull of a leading tone. It gives natural-minor, modal, and rock progressions their relaxed ♭VII descent.',
   ],
 };
+
+// The major scale by semitones above the tonic, up to the octave.
+const MAJOR_STEPS = [0, 2, 4, 5, 7, 9, 11, 12];
+
+/**
+ * How a note resolves to the tonic, as semitones above the tonic, the way
+ * functional ear training plays it after each answer: step by step along
+ * the major scale to the nearer tonic. Degrees 1–4 (and ♭2, ♭3) fall to 1;
+ * 5–7 (and ♯4, ♭6, ♭7) rise to the octave. 5 rises because the octave is
+ * three steps away and the tonic four.
+ *
+ *   resolution(9)  → [9, 11, 12]     6 → 7 → 1
+ *   resolution(3)  → [3, 2, 0]       ♭3 → 2 → 1
+ */
+export function resolution(semitones: number): number[] {
+  if (semitones === 0) return [0];
+  if (semitones < 6) {
+    const between = MAJOR_STEPS.filter((s) => s > 0 && s < semitones).reverse();
+    return [semitones, ...between, 0];
+  }
+  const between = MAJOR_STEPS.filter((s) => s > semitones && s < 12);
+  return [semitones, ...between, 12];
+}

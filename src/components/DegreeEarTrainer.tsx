@@ -5,7 +5,7 @@ import PlayButton from './ui/PlayButton';
 import QuizActions from './ui/QuizActions';
 import ResultBanner from './ui/ResultBanner';
 import SegmentedControl from './ui/SegmentedControl';
-import { DEGREE_NAMES, formatNote, keyTonic, spellAbove, type Note } from '../theory';
+import { DEGREE_NAMES, formatNote, keyTonic, resolution, spellAbove, type Note } from '../theory';
 import { pick, randomNote } from '../random';
 import { oneOf, usePersistentState } from '../hooks/usePersistentState';
 import { usePlayback } from '../hooks/usePlayback';
@@ -55,6 +55,9 @@ const CADENCE = [0, 3, 4, 0];
 const CHORD_SECONDS = 0.7;
 const PAUSE_SECONDS = 0.6;
 const NOTE_SECONDS = 1.6;
+// The resolution after an answer: steps, then a longer landing on the tonic.
+const STEP_SECONDS = 0.45;
+const LANDING_SECONDS = 1.2;
 
 interface Round {
   tonic: Note;
@@ -116,6 +119,26 @@ export default function DegreeEarTrainer({ fixedKey }: DegreeEarTrainerProps) {
     playback.started(playMidiPhrase([{ midis: [targetMidi(round)], duration: NOTE_SECONDS }]));
   }
 
+  /** The note walking home to the tonic (6 → 7 → 1), so its pull is heard. */
+  function playResolution() {
+    const base = tonicMidi(round.tonic);
+    const path = resolution(round.degree.semitones);
+    const seconds = playMidiPhrase(
+      path.map((s, i) => ({
+        midis: [base + s],
+        duration: i === path.length - 1 ? LANDING_SECONDS : STEP_SECONDS,
+      })),
+      0.05,
+    );
+    playback.started(seconds);
+  }
+
+  function submit() {
+    grade(selected?.semitones === round.degree.semitones);
+    // The Submit tap is a user gesture, so the resolution can play now.
+    playResolution();
+  }
+
   function changePool(nextPool: Pool) {
     setPool(nextPool);
     next(newRound(nextPool, fixedKey));
@@ -132,6 +155,7 @@ export default function DegreeEarTrainer({ fixedKey }: DegreeEarTrainerProps) {
   const keyName = `${formatNote(tonic)} major`;
   const { degree } = round;
   const noteName = formatNote(spellAbove(tonic, degree.tonal));
+  const path = resolution(degree.semitones).map((s) => DEGREES[s % 12].label).join(' → ');
 
   return (
     <div className="ear-game">
@@ -150,7 +174,7 @@ export default function DegreeEarTrainer({ fixedKey }: DegreeEarTrainerProps) {
           isPlaying={playback.isPlaying}
           onPlay={() => play()}
         />
-        {playback.hasPlayed && (
+        {playback.hasPlayed && !graded && (
           <button
             type="button"
             className="secondary-btn"
@@ -158,6 +182,16 @@ export default function DegreeEarTrainer({ fixedKey }: DegreeEarTrainerProps) {
             disabled={playback.isPlaying}
           >
             ♪ Note again
+          </button>
+        )}
+        {graded && degree.semitones !== 0 && (
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={playResolution}
+            disabled={playback.isPlaying}
+          >
+            ♪ Resolve again
           </button>
         )}
       </div>
@@ -190,7 +224,7 @@ export default function DegreeEarTrainer({ fixedKey }: DegreeEarTrainerProps) {
       <QuizActions
         graded={graded}
         canSubmit={selected !== null && playback.hasPlayed}
-        onSubmit={() => grade(selected?.semitones === degree.semitones)}
+        onSubmit={submit}
         onNext={nextRound}
       />
 
@@ -199,6 +233,7 @@ export default function DegreeEarTrainer({ fixedKey }: DegreeEarTrainerProps) {
           {correct ? '✓ Correct! ' : '✗ Not quite. '}
           That was <strong>{degree.label}</strong>
           {degree.name && <>, the {degree.name}</>}: {noteName} in {keyName}.
+          {degree.semitones !== 0 && <> It resolves {path}.</>}
         </ResultBanner>
       )}
     </div>
